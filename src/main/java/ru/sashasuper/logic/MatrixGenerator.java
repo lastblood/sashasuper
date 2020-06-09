@@ -13,6 +13,9 @@ public class MatrixGenerator {
     }
 
     public Matrix randomMatrixInRange(int rows, int columns, float min, float max) {
+        if(rows < 0 || columns < 0)
+            throw new IllegalArgumentException("Rows and columns should be > 0");
+
         Random r = (random == null) ? new Random() : random;
 
         float values[][] = new float[rows][columns];
