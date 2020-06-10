@@ -3,8 +3,9 @@ package ru.sashasuper.logic;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class Math {
+public class VectorMath {
 
+    //Умножение матрицы на вектор
     public static Vector matrixVector(Matrix matrix, Vector vector) {
         int rows = matrix.getRows();
         int columns = matrix.getColumns();
@@ -24,7 +25,8 @@ public class Math {
 
     }
 
-    public static Vector mult(Vector firstVector, Vector secondVector) {
+    //Поэлементное умножение векторов
+    public static Vector multElements(Vector firstVector, Vector secondVector) {
 
         thr(firstVector.getLen() != secondVector.getLen());
 
@@ -34,7 +36,8 @@ public class Math {
         return result;
     }
 
-    public static Vector sub(Vector firstVector, Vector secondVector) {
+    //Поэлементное вычитание векторов
+    public static Vector subtraction(Vector firstVector, Vector secondVector) {
 
         thr(firstVector.getLen() != secondVector.getLen());
 
@@ -45,17 +48,18 @@ public class Math {
 
     }
 
-    public static Matrix vMult(Vector column, Vector row) {
+    //Произведение вектора-столбца на вектор-строку
+    public static Matrix multVectors(Vector columnVector, Vector rowVector) {
 
-        int rows = row.getLen();
-        int columns = column.getLen();
+        int rows = rowVector.getLen();
+        int columns = columnVector.getLen();
 
         thr(columns != rows);
 
         float[][] result = new float[columns][rows];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                result[i][j] = column.getValues()[i] * row.getValues()[j];
+                result[i][j] = columnVector.getValues()[i] * rowVector.getValues()[j];
             }
         }
         return new Matrix(rows, columns, result);
