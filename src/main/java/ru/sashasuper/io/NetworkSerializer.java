@@ -10,9 +10,7 @@ public class NetworkSerializer {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 
         objectOutputStream.writeObject(net);
-
-        outputStream.close();
-
+        objectOutputStream.close();
     }
 
     public static Network deserialization(String fileName) throws IOException, ClassNotFoundException {
@@ -20,8 +18,7 @@ public class NetworkSerializer {
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
         Network network = (Network) objectInputStream.readObject();
-        fileInputStream.close();
-
+        objectInputStream.close();
         return network;
     }
 }
