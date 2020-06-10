@@ -14,6 +14,7 @@ public class Neural {
         return vectors[0];
     }
 
+    // Умеет запоминать состояние промежуточных векторов внутри сети для использования в backpropagation
     private static Vector[] processUniversally(Network network, Vector input, boolean rememberSteps) {
         thr(network.getWeightMatrices()[0].getColumns() != input.getLen(),
                 "input.length != matrix[0].columns");
@@ -31,6 +32,7 @@ public class Neural {
         return rememberSteps ? memories : new Vector[]{currentVector};
     }
 
+    // Masterpiece
     public static Neural backPropagation(Network network, Vector input, Vector expectedOutput) {
         // Прогнать прямое распространение и запомнить результаты
         Vector[] vectors = processUniversally(network, input, true);
@@ -48,6 +50,7 @@ public class Neural {
         return null; //todo
     }
 
+    // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
     private static Vector backPropagationIter(Network network, Vector[] networkState, Vector error_layer, int currentIndex) {
         thr(currentIndex == 0 || currentIndex >= networkState.length);
 
