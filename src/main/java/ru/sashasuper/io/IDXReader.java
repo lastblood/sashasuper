@@ -48,7 +48,7 @@ public class IDXReader {
         return new Vector(length, array);
     }
 
-    private HashMap<Integer, ArrayList<Vector>> read
+    private HashMap<Integer, ArrayList<Vector>> readIDX
             (InputStream imageInput, InputStream labelInput, int pixels, int images) throws IOException {
 
         HashMap<Integer, ArrayList<Vector>> result = new HashMap<>();
@@ -66,7 +66,7 @@ public class IDXReader {
         return result;
     }
 
-    public HashMap<Integer, ArrayList<Vector>> readIdx() throws IOException {
+    public HashMap<Integer, ArrayList<Vector>> read() throws IOException {
         FileInputStream fisImages = new FileInputStream(imagesFilePath);
         FileInputStream fisLabels = new FileInputStream(labelsFilePath);
 
@@ -86,7 +86,7 @@ public class IDXReader {
             int columns = readUnsignedInt(imageInput);
             thr(rows * columns <= 0, "Wrong rows (" + rows + ") or columns (" + columns + ") size");
 
-            return read(imageInput, labelInput, rows * columns, imagesCount);
+            return readIDX(imageInput, labelInput, rows * columns, imagesCount);
         }
     }
 }
