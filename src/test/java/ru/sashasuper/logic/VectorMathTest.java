@@ -3,8 +3,6 @@ package ru.sashasuper.logic;
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.functions.ReLU;
 
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.sashasuper.logic.VectorMath.*;
 
@@ -41,6 +39,35 @@ class VectorMathTest {
     void matrixVectorTest3() {
         float[][] matrix = {{3,1,7,8}, {5,9,0,-4}};
         float[] vector = {3,4};
+
+        Matrix m = new Matrix(matrix);
+        Vector v = new Vector(vector);
+
+        try {
+            Vector res = multMatrixVector(m, v);
+            fail();
+        } catch(Throwable t){
+
+        }
+    }
+
+    @Test
+    void multMatrixVectorTransposedTest1() {
+        float[][] matrix = {{3,1,7,8}, {5,9,0,-4}};
+        float[] vector = {-30, -40};
+
+        Matrix m = new Matrix(matrix);
+        Vector v = new Vector(vector);
+
+        float[] result = {-290, -390, -210, -80};
+        Vector res = multMatrixVectorTransposed(m, v);
+        assertArrayEquals(result, res.getValues());
+    }
+
+    @Test
+    void multMatrixVectorTransposedTest2() {
+        float[][] matrix = {{0,0,-7}, {-1,0,0}};
+        float[] vector = {0, 0, 2};
 
         Matrix m = new Matrix(matrix);
         Vector v = new Vector(vector);

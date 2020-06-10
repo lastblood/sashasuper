@@ -3,6 +3,8 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.logic.functions.ActivateFunction;
 
+import java.util.Arrays;
+
 import static ru.sashasuper.utils.Assertions.thr;
 
 public class VectorMath {
@@ -24,7 +26,24 @@ public class VectorMath {
             result[i] = res;
         }
         return new Vector(result);
+    }
 
+    public static Vector multMatrixVectorTransposed(Matrix matrix, Vector vector) {
+        int rows = matrix.getRows();
+        int columns = matrix.getColumns();
+
+        thr(vector.getLen() != rows);
+
+        float[] result = new float[columns];
+
+        for (int i = 0; i < columns; i++) {
+            float res = 0;
+            for (int j = 0; j < rows; j++) {
+                res += matrix.getValues()[j][i] * vector.getValues()[j];
+            }
+            result[i] = res;
+        }
+        return new Vector(result);
     }
 
     //Поэлементное умножение векторов
