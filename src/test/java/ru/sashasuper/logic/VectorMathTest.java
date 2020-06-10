@@ -1,6 +1,10 @@
 package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
+import ru.sashasuper.logic.functions.ReLU;
+
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.sashasuper.logic.VectorMath.*;
 
@@ -92,7 +96,7 @@ class VectorMathTest {
     }
 
     @Test
-    void subtractionTest2() {
+    void subElementsTest2() {
         float[] fVector = {1, 32, -22, 0, 1, 4};
         float[] sVector = {4, 5};
 
@@ -135,5 +139,41 @@ class VectorMathTest {
         } catch (Throwable t) {
 
         }
+    }
+
+    @Test
+    void applyToVectorTest() {
+        Vector v = new Vector(new float[]{3.0f, 0, -1.7f, 0.00001f, -0.0f});
+        Vector res1 = applyToVector(v, new ReLU());
+        assertArrayEquals(res1.getValues(), new float[]{3.0f, 0,0, 0.00001f, 0});
+        Vector res2 = applyToVector(v, new ReLU(), true);
+        assertArrayEquals(res2.getValues(), new float[]{1, 0, 0, 1, 0});
+        assertArrayEquals(applyToVector(v, new ReLU(), false).getValues(), res1.getValues());
+    }
+
+    private void assertMatricesEquals(Matrix matrix1, Matrix matrix2) {
+        assertNotNull(matrix1);
+        assertNotNull(matrix2);
+
+        assertEquals(matrix1.getColumns(), matrix2.getColumns());
+        assertEquals(matrix1.getRows(), matrix2.getRows());
+
+        for (int i = 0; i < matrix1.getRows(); i++) {
+            assertArrayEquals(matrix1.getValues()[i], matrix2.getValues()[i]);
+        }
+    }
+
+    @Test
+    void multMatrixByTTest() {
+        Matrix matrix = new Matrix(new float[][]{{1,2,3}, {3,4,5}});
+        Matrix result = multMatrixByT(matrix, 3);
+        assertMatricesEquals(result, new Matrix(new float[][]{{3,9},{6,12},{9,15}}));
+    }
+
+    @Test
+    void subMatricesTest() {
+        Matrix result = subMatrices(new Matrix(new float[][]{{1, 2}, {3, 4}, {5, 6}}),
+                                    new Matrix(new float[][]{{-1, -2}, {0, 0}, {5, 6}}));
+        assertMatricesEquals(result, new Matrix(new float[][]{{2, 4}, {3, 4}, {0, 0}}));
     }
 }
