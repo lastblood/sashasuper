@@ -8,14 +8,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.zip.GZIPInputStream;
 
 public class IDXReader {
-    private final String imagesFilePath;
-    private final String labelsFilePath;
+    private String imagesFilePath;
+    private String labelsFilePath;
+    private boolean gzippedImages;
+    private boolean gzippedLabels;
 
-    public IDXReader(String imagesFilePath, String labelsFilePath) {
+    public IDXReader(String imagesFilePath, String labelsFilePath, boolean gzipped) {
         this.imagesFilePath = imagesFilePath;
         this.labelsFilePath = labelsFilePath;
+        this.gzippedLabels = gzipped;
+        this.gzippedImages = gzipped;
+    }
+
+    public IDXReader(String imagesFilePath, String labelsFilePath, boolean gzippedImages, boolean gzippedLabels) {
+        this.imagesFilePath = imagesFilePath;
+        this.labelsFilePath = labelsFilePath;
+        this.gzippedImages = gzippedImages;
+        this.gzippedLabels = gzippedLabels;
     }
 
     private static void thr(boolean condition) {
@@ -60,15 +72,16 @@ public class IDXReader {
                 result.put(label, new ArrayList<>());
 
             result.get(label).add(vector);
-
-            if(i % 1000 == 0) System.out.println("Number of images extracted: " + i);
         }
         return result;
     }
 
     public HashMap<Integer, ArrayList<Vector>> readIdx() throws IOException {
-        try(BufferedInputStream imageInput = new BufferedInputStream(new FileInputStream(imagesFilePath));
-            BufferedInputStream labelInput = new BufferedInputStream(new FileInputStream(labelsFilePath))) {
+        FileInputStream fisImages = new FileInputStream(imagesFilePath);
+        FileInputStream fisLabels = new FileInputStream(labelsFilePath);
+
+        try(InputStream imageInput = gzippedImages ? new GZIPInputStream(fisImages) : new BufferedInputStream(fisImages);
+            InputStream labelInput = gzippedLabels ? new GZIPInputStream(fisLabels) : new BufferedInputStream(fisLabels)) {
 
             int magicNumberImages = readUnsignedInt(imageInput);
             thr(magicNumberImages != 2051, "Corrupted images file");
