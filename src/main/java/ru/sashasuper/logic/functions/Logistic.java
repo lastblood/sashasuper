@@ -12,6 +12,6 @@ public class Logistic extends ActivateFunction implements Serializable {
 
     public float derivative(float value){
         float pr = process(value);
-        return pr/(1 - pr);
+        return pr * (1 - pr);
     }
 }
