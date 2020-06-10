@@ -48,7 +48,7 @@ public class IDXReader {
         for (int pixel = 0; pixel < length; pixel++)
             array[pixel] = 255 - inImage.read();
 
-        return new Vector(length, array);
+        return new Vector(array);
     }
 
     private List<SimpleEntry<Vector, Integer>> readIDX

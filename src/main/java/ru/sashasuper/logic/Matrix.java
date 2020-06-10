@@ -2,40 +2,34 @@ package ru.sashasuper.logic;
 
 import java.io.Serializable;
 
+import static ru.sashasuper.utils.Assertions.thr;
+
 public class Matrix implements Serializable {
     private int rows, columns;
     private float[][] values;
 
-    public Matrix(int rows, int columns, float[][] values) {
-        this.rows = rows;
-        this.columns = columns;
+    public Matrix(float[][] values) {
+        thr(values.length == 0);
+        rows = values.length;
+        columns = values[0].length;
+        for(int i = 1; i < values.length; i++)
+            thr(values[i].length != columns);
+
         this.values = values;
     }
 
-    public Matrix() {
+    private Matrix() {
     }
 
     public int getRows() {
         return rows;
     }
 
-    public void setRows(int rows) {
-        this.rows = rows;
-    }
-
     public int getColumns() {
         return columns;
     }
 
-    public void setColumns(int columns) {
-        this.columns = columns;
-    }
-
     public float[][] getValues() {
         return values;
-    }
-
-    public void setValues(float[][] values) {
-        this.values = values;
     }
 }

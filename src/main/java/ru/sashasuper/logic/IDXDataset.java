@@ -29,7 +29,7 @@ public class IDXDataset extends Dataset {
 
         float[] vectorValue = new float[outputVectorLength];
         vectorValue[value] = 1.0f;
-        return new Vector(outputVectorLength, vectorValue);
+        return new Vector(vectorValue);
     }
 
     @Override

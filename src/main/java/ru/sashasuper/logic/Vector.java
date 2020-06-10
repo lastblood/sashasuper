@@ -2,32 +2,25 @@ package ru.sashasuper.logic;
 
 import java.io.Serializable;
 
+import static ru.sashasuper.utils.Assertions.thr;
+
 public class Vector implements Serializable {
-    private int len;
     private float[] values;
 
-    public Vector(int len, float[] values) {
-        this.len = len;
+    public Vector(float[] values) {
+        thr(values.length == 0);
         this.values = values;
     }
 
-    public Vector() {
+    private Vector() {
     }
 
     public int getLen() {
-        return len;
-    }
-
-    public void setLen(int len) {
-        this.len = len;
+        return values.length;
     }
 
     public float[] getValues() {
         return values;
-    }
-
-    public void setValues(float[] values) {
-        this.values = values;
     }
 }
 

@@ -27,7 +27,7 @@ public class ImageReader {
     private Vector vectorFromImage(BufferedImage image) {
         int h = image.getHeight(), w = image.getWidth();
         float[] vectorArray = new float[h * w];
-        Vector v = new Vector(vectorArray.length, vectorArray);
+        Vector v = new Vector(vectorArray);
 
         int vectorIndex = 0;
         for (int y = 0; y < h; y++) {
