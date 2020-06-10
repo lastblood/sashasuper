@@ -11,23 +11,15 @@ public class Vector implements Serializable {
         this.values = values;
     }
 
-    public Vector() {
+    private Vector() {
     }
 
     public int getLen() {
         return len;
     }
 
-    public void setLen(int len) {
-        this.len = len;
-    }
-
     public float[] getValues() {
         return values;
-    }
-
-    public void setValues(float[] values) {
-        this.values = values;
     }
 }
 
