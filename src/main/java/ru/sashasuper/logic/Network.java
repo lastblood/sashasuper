@@ -10,13 +10,17 @@ public class Network implements Serializable {
     private int layerCount;
     private Matrix[] weightMatrices;
     private ActivateFunction activateFunction;
+    private float learningRate;
 
-    public Network(int inputSize, int outputSize, int layerCount, Matrix[] weightMatrices, ActivateFunction activateFunction) {
+    public Network(int inputSize, int outputSize, int layerCount, Matrix[] weightMatrices,
+                   ActivateFunction activateFunction, float learningRate) {
+
         this.inputSize = inputSize;
         this.outputSize = outputSize;
         this.layerCount = layerCount;
         this.weightMatrices = weightMatrices;
         this.activateFunction = activateFunction;
+        this.learningRate = learningRate;
     }
 
     private Network() {
@@ -40,5 +44,9 @@ public class Network implements Serializable {
 
     public ActivateFunction getActivateFunction() {
         return activateFunction;
+    }
+
+    public float getLearningRate() {
+        return learningRate;
     }
 }
