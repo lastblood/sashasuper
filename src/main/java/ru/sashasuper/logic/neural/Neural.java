@@ -1,10 +1,9 @@
 package ru.sashasuper.logic.neural;
 
-import ru.sashasuper.logic.Math;
-import ru.sashasuper.logic.Matrix;
 import ru.sashasuper.logic.Network;
 import ru.sashasuper.logic.Vector;
 
+import static ru.sashasuper.logic.VectorMath.multMatrixVector;
 import static ru.sashasuper.utils.Assertions.thr;
 
 public class Neural {
@@ -23,7 +22,7 @@ public class Neural {
 
         Vector currentVector = input;
         for (int i = 0; i < network.getWeightMatrices().length; i++) {
-            currentVector = Math.matrixVector(network.getWeightMatrices()[i], currentVector);
+            currentVector = multMatrixVector(network.getWeightMatrices()[i], currentVector);
             //todo: применить функцию активации, иначе магии нейронных сетей нам не видать
             if (rememberSteps) memories[i + 1] = currentVector;
         }
