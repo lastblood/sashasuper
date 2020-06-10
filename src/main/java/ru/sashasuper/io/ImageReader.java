@@ -9,19 +9,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class ImageReader {
-    private ImageReader() {
+    private final String imageFileName;
+    public ImageReader(String imageFileName) {
+        this.imageFileName = imageFileName;
     }
 
-    public static BufferedImage readImage(String fileName) throws IOException {
-        File f = new File(fileName);
+    public BufferedImage readImage() throws IOException {
+        File f = new File(imageFileName);
+
         if(!f.exists() || !f.canRead())
-            throw new FileNotFoundException("Doesn't exists: " + fileName);
+            throw new FileNotFoundException("Doesn't exists: " + imageFileName);
 
         return ImageIO.read(f);
     }
 
     // Запись построчная. Значения [0;255]. Цветные изображения обесцвечиваются
-    public static Vector vectorFromImage(BufferedImage image) {
+    private Vector vectorFromImage(BufferedImage image) {
         int h = image.getHeight(), w = image.getWidth();
         float[] vectorArray = new float[h * w];
         Vector v = new Vector(vectorArray.length, vectorArray);
