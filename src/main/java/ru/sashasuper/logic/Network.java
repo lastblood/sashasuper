@@ -15,38 +15,22 @@ public class Network implements Serializable {
         this.weightMatrices = weightMatrices;
     }
 
-    public Network() {
+    private Network() {
     }
 
     public int getInputSize() {
         return inputSize;
     }
 
-    public void setInputSize(int inputSize) {
-        this.inputSize = inputSize;
-    }
-
     public int getOutputSize() {
         return outputSize;
-    }
-
-    public void setOutputSize(int outputSize) {
-        this.outputSize = outputSize;
     }
 
     public int getLayerCount() {
         return layerCount;
     }
 
-    public void setLayerCount(int layerCount) {
-        this.layerCount = layerCount;
-    }
-
     public Matrix[] getWeightMatrices() {
         return weightMatrices;
-    }
-
-    public void setWeightMatrices(Matrix[] weightMatrices) {
-        this.weightMatrices = weightMatrices;
     }
 }
