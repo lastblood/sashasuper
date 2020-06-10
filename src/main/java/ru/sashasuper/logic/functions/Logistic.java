@@ -6,12 +6,12 @@ public class Logistic extends ActivateFunction implements Serializable {
     public Logistic(){}
 
     public float process(float value){
-        float ex = Math.getExponent(value);
+        float ex = (float) Math.pow(Math.E, value);
         return ex/(ex + 1);
     }
 
     public float derivative(float value){
         float pr = process(value);
-        return pr/(1 - pr);
+        return pr * (1 - pr);
     }
 }
