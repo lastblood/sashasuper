@@ -67,18 +67,48 @@ public class VectorMath {
         return new Matrix(result);
     }
 
-    //Поэлементное применение функции активации
     public static Vector applyToVector(Vector vector, ActivateFunction function) {
+        return applyToVector(vector, function, false);
+    }
+
+    //Поэлементное применение функции активации (самой функции или производной)
+    public static Vector applyToVector(Vector vector, ActivateFunction function, boolean derivative) {
         int len = vector.getLen();
         Vector result = new Vector(new float[len]);
 
-        for (int i = 0; i < len; i++)
-            result.getValues()[i] = function.process(vector.getValues()[i]);
+        for (int i = 0; i < len; i++) {
+            float x = vector.getValues()[i];
+            result.getValues()[i] = derivative ? function.derivative(x) : function.process(x);
+        }
 
         return result;
     }
+
+    // Поэлементное вычитание матриц
+    public static Matrix subMatrices(Matrix firstMatrix, Matrix secondMatrix) {
+        int columns = firstMatrix.getColumns(), rows = firstMatrix.getRows();
+        thr(columns != secondMatrix.getColumns() || rows != secondMatrix.getRows());
+
+        float[][] valuesResult = new float[rows][columns];
+        float[][] values1 = firstMatrix.getValues();
+        float[][] values2 = secondMatrix.getValues();
+        for (int y = 0; y < rows; y++)
+            for (int x = 0; x < columns; x++)
+                valuesResult[y][x] = values1[y][x] - values2[y][x];
+
+        return new Matrix(valuesResult);
+    }
+
+    // Транспонирование матрицы и умножение на число
+    public static Matrix multMatrixByT(Matrix matrix, float multiplier) {
+        int columns = matrix.getColumns(), rows = matrix.getRows();
+
+        float[][] newValue = new float[columns][rows], oldValues = matrix.getValues();
+        for (int x = 0; x < columns; x++)
+            for (int y = 0; y < rows; y++)
+                newValue[x][y] = oldValues[y][x] * multiplier;
+
+        return new Matrix(newValue);
+    }
 }
-
-
-
 
