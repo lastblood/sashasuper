@@ -2,8 +2,8 @@ package ru.sashasuper.logic.functions;
 
 import java.io.Serializable;
 
-public class Sigmoid extends ActivateFunction implements Serializable {
-    public Sigmoid(){}
+public class Logistic extends ActivateFunction implements Serializable {
+    public Logistic(){}
 
     public float process(float value){
         float ex = Math.getExponent(value);
@@ -11,8 +11,7 @@ public class Sigmoid extends ActivateFunction implements Serializable {
     }
 
     public float derivative(float value){
-        float ex = Math.getExponent(value);
-        float e2x = Math.getExponent(2*value);
-        return ex/(ex + 1) - e2x/(e2x + 2*ex + 1);
+        float pr = process(value);
+        return pr/(1 - pr);
     }
 }
