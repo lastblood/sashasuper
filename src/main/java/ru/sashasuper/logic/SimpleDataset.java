@@ -9,9 +9,6 @@ import static java.util.AbstractMap.SimpleEntry;
 public class SimpleDataset extends Dataset {
     ArrayList<SimpleEntry<Vector, Vector>> list;
 
-    public SimpleDataset() {
-    }
-
     public SimpleDataset(int initialCapacity) {
         this.list = new ArrayList<>(initialCapacity);
     }
