@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 
+import static ru.sashasuper.utils.Assertions.thr;
+
 public class IDXReader {
     private String imagesFilePath;
     private String labelsFilePath;
@@ -30,20 +32,9 @@ public class IDXReader {
         this.gzippedLabels = gzippedLabels;
     }
 
-    private static void thr(boolean condition) {
-        if(condition)
-            throw new IllegalArgumentException();
-    }
-
-    private static void thr(boolean condition, String message) {
-        if(condition)
-            throw new IllegalArgumentException(message);
-    }
-
     private int readUnsignedInt(InputStream inImage) throws IOException {
         long temp = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
-        if(temp < 0 || temp > Integer.MAX_VALUE)
-            throw new IllegalArgumentException("Wrong value for unsigned integer: " + temp);
+        thr(temp < 0, "Wrong value for unsigned integer: " + temp);
         return (int) temp;
     }
 
@@ -57,7 +48,7 @@ public class IDXReader {
         return new Vector(length, array);
     }
 
-    private HashMap<Integer, ArrayList<Vector>> read
+    private HashMap<Integer, ArrayList<Vector>> readIDX
             (InputStream imageInput, InputStream labelInput, int pixels, int images) throws IOException {
 
         HashMap<Integer, ArrayList<Vector>> result = new HashMap<>();
@@ -65,8 +56,7 @@ public class IDXReader {
             Vector vector = readImageInVector(imageInput, pixels);
             int label = labelInput.read();
 
-            if(label < 0)
-                throw new IllegalArgumentException("Unexpected end of file");
+            thr(label < 0, "Unexpected end of file");
 
             if(!result.containsKey(label))
                 result.put(label, new ArrayList<>());
@@ -76,7 +66,7 @@ public class IDXReader {
         return result;
     }
 
-    public HashMap<Integer, ArrayList<Vector>> readIdx() throws IOException {
+    public HashMap<Integer, ArrayList<Vector>> read() throws IOException {
         FileInputStream fisImages = new FileInputStream(imagesFilePath);
         FileInputStream fisLabels = new FileInputStream(labelsFilePath);
 
@@ -96,7 +86,7 @@ public class IDXReader {
             int columns = readUnsignedInt(imageInput);
             thr(rows * columns <= 0, "Wrong rows (" + rows + ") or columns (" + columns + ") size");
 
-            return read(imageInput, labelInput, rows * columns, imagesCount);
+            return readIDX(imageInput, labelInput, rows * columns, imagesCount);
         }
     }
 }
