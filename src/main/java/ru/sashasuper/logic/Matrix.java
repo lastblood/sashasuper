@@ -8,13 +8,13 @@ public class Matrix implements Serializable {
     private int rows, columns;
     private float[][] values;
 
-    public Matrix(int rows, int columns, float[][] values) {
-        thr(rows <= 0 || columns <= 0);
-        thr(values.length != rows);
-        for(int i = 0; i < rows; i++) thr(values[i].length != columns);
+    public Matrix(float[][] values) {
+        thr(values.length == 0);
+        rows = values.length;
+        columns = values[0].length;
+        for(int i = 1; i < values.length; i++)
+            thr(values[i].length != columns);
 
-        this.rows = rows;
-        this.columns = columns;
         this.values = values;
     }
 
