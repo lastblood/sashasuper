@@ -2,8 +2,10 @@ package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static ru.sashasuper.logic.Math.matrixVector;
+import static ru.sashasuper.logic.Math.*;
 
 class MathTest {
 
@@ -50,9 +52,91 @@ class MathTest {
         }
     }
 
+    @Test
+    void multTest1() {
+        float[] firstVector = {0, 0, 2};
+        float[] secondVector = {1, 2, 3};
+
+        Vector v1 = new Vector(3, firstVector);
+        Vector v2 = new Vector(3, secondVector);
+
+        float[] result = {0, 0, 6};
+        Vector res = mult(v1, v2);
+        assertArrayEquals(res.getValues(), result);
+    }
 
     @Test
-    void vectorMatrixTest() {
+    void multTest2() {
+        float[] firstVector = {0, -4, 2};
+        float[] secondVector = {1, 2};
 
+        Vector v1 = new Vector(3, firstVector);
+        Vector v2 = new Vector(2, secondVector);
+
+        try {
+            Vector res = mult(v1, v2);
+            fail();
+        } catch (Throwable t) {
+
+        }
+    }
+
+    @Test
+    void subTest1() {
+        float[] fVector = {1, 32, -4};
+        float[] sVector = {4, 22, 0};
+
+        Vector v1 = new Vector(3, fVector);
+        Vector v2 = new Vector(3, sVector);
+
+        float[] result = {-3, 10, -4};
+        Vector res = sub(v1, v2);
+        assertArrayEquals(res.getValues(), result);
+    }
+
+    @Test
+    void subTest2() {
+        float[] fVector = {1, 32, -22, 0, 1, 4};
+        float[] sVector = {4, 5};
+
+        Vector v1 = new Vector(6, fVector);
+        Vector v2 = new Vector(2, sVector);
+
+        try {
+            Vector res = sub(v1, v2);
+            fail();
+        } catch (Throwable t) {
+
+        }
+
+    }
+
+    @Test
+    void vMultTest1() {
+        float[] column = {1, -1, 3};
+        float[] row = {0, -5, 1};
+
+        Vector v1 = new Vector(3, column);
+        Vector v2 = new Vector(3, row);
+
+        float[][] result = {{0, -5, 1}, {-0.0f, 5, -1}, {0, -15, 3}};
+        Matrix res = vMult(v1, v2);
+        assertArrayEquals(res.getValues(), result);
+    }
+
+    @Test
+    void vMultTest2() {
+        float[] column = {4,3,6,7};
+        float[] row = {9,11,2};
+
+        Vector v1 = new Vector(4, column);
+        Vector v2 = new Vector(3, row);
+
+        try {
+            Matrix res = vMult(v1, v2);
+            fail();
+        } catch (Throwable t) {
+
+        }
     }
 }
