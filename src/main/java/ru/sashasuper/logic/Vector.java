@@ -5,12 +5,10 @@ import java.io.Serializable;
 import static ru.sashasuper.utils.Assertions.thr;
 
 public class Vector implements Serializable {
-    private int len;
     private float[] values;
 
-    public Vector(int len, float[] values) {
-        thr(len != values.length);
-        this.len = len;
+    public Vector(float[] values) {
+        thr(values.length == 0);
         this.values = values;
     }
 
@@ -18,7 +16,7 @@ public class Vector implements Serializable {
     }
 
     public int getLen() {
-        return len;
+        return values.length;
     }
 
     public float[] getValues() {
