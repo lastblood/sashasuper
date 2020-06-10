@@ -7,7 +7,7 @@ import static ru.sashasuper.logic.VectorMath.*;
 class VectorMathTest {
 
     @Test
-    void matrixVectorTest1() {
+    void multMatrixVectorTest1() {
         float[][] matrix = {{1,2}, {6, 56}};
         float[] vector = {4, 23};
 
@@ -15,7 +15,7 @@ class VectorMathTest {
         Vector v = new Vector(2, vector);
 
         float[] result = {50, 1312};
-        Vector res = matrixVector(m,v);
+        Vector res = multMatrixVector(m,v);
         assertArrayEquals(res.getValues(), result);
     }
 
@@ -28,7 +28,7 @@ class VectorMathTest {
         Vector v = new Vector(3, vector);
 
         float[] result = {-14, 0};
-        Vector res = matrixVector(m,v);
+        Vector res = multMatrixVector(m,v);
         assertArrayEquals(res.getValues(), result);
 
     }
@@ -42,7 +42,7 @@ class VectorMathTest {
         Vector v = new Vector(2, vector);
 
         try {
-            Vector res = matrixVector(m, v);
+            Vector res = multMatrixVector(m, v);
             fail();
         } catch(Throwable t){
 
@@ -79,7 +79,7 @@ class VectorMathTest {
     }
 
     @Test
-    void subtractionTest1() {
+    void subElementsTest1() {
         float[] fVector = {1, 32, -4};
         float[] sVector = {4, 22, 0};
 
@@ -87,7 +87,7 @@ class VectorMathTest {
         Vector v2 = new Vector(3, sVector);
 
         float[] result = {-3, 10, -4};
-        Vector res = subtraction(v1, v2);
+        Vector res = subElements(v1, v2);
         assertArrayEquals(res.getValues(), result);
     }
 
@@ -100,7 +100,7 @@ class VectorMathTest {
         Vector v2 = new Vector(2, sVector);
 
         try {
-            Vector res = subtraction(v1, v2);
+            Vector res = subElements(v1, v2);
             fail();
         } catch (Throwable t) {
 

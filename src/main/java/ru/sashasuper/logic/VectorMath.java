@@ -6,7 +6,7 @@ import static ru.sashasuper.utils.Assertions.thr;
 public class VectorMath {
 
     //Умножение матрицы на вектор
-    public static Vector matrixVector(Matrix matrix, Vector vector) {
+    public static Vector multMatrixVector(Matrix matrix, Vector vector) {
         int rows = matrix.getRows();
         int columns = matrix.getColumns();
 
@@ -37,7 +37,7 @@ public class VectorMath {
     }
 
     //Поэлементное вычитание векторов
-    public static Vector subtraction(Vector firstVector, Vector secondVector) {
+    public static Vector subElements(Vector firstVector, Vector secondVector) {
 
         thr(firstVector.getLen() != secondVector.getLen());
 
