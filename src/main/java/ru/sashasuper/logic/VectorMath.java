@@ -23,7 +23,7 @@ public class VectorMath {
             }
             result[i] = res;
         }
-        return new Vector(rows, result);
+        return new Vector(result);
 
     }
 
@@ -32,7 +32,7 @@ public class VectorMath {
 
         thr(firstVector.getLen() != secondVector.getLen());
 
-        Vector result = new Vector(firstVector.getLen(), new float[firstVector.getLen()]);
+        Vector result = new Vector(new float[firstVector.getLen()]);
         for (int i = 0; i < result.getLen(); i++)
             result.getValues()[i] = firstVector.getValues()[i] * secondVector.getValues()[i];
         return result;
@@ -43,7 +43,7 @@ public class VectorMath {
 
         thr(firstVector.getLen() != secondVector.getLen());
 
-        Vector result = new Vector(firstVector.getLen(), new float[firstVector.getLen()]);
+        Vector result = new Vector(new float[firstVector.getLen()]);
         for (int i = 0; i < result.getLen(); i++)
             result.getValues()[i] = firstVector.getValues()[i] - secondVector.getValues()[i];
         return result;
@@ -64,13 +64,13 @@ public class VectorMath {
                 result[i][j] = columnVector.getValues()[i] * rowVector.getValues()[j];
             }
         }
-        return new Matrix(rows, columns, result);
+        return new Matrix(result);
     }
 
     //Поэлементное применение функции активации
     public static Vector applyToVector(Vector vector, ActivateFunction function) {
         int len = vector.getLen();
-        Vector result = new Vector(len, new float[len]);
+        Vector result = new Vector(new float[len]);
 
         for (int i = 0; i < len; i++)
             result.getValues()[i] = function.process(vector.getValues()[i]);

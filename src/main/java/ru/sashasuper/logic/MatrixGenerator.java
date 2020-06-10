@@ -26,7 +26,7 @@ public class MatrixGenerator {
             }
         }
 
-        return new Matrix(rows, columns, values);
+        return new Matrix(values);
     }
 
     public Matrix randomMatrix(int rows, int columns) {
