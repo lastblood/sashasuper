@@ -1,6 +1,8 @@
 package ru.sashasuper.logic;
 
 
+import ru.sashasuper.logic.functions.ActivateFunction;
+
 import static ru.sashasuper.utils.Assertions.thr;
 
 public class VectorMath {
@@ -63,6 +65,17 @@ public class VectorMath {
             }
         }
         return new Matrix(rows, columns, result);
+    }
+
+    //Поэлементное применение функции активации
+    public static Vector applyToVector(Vector vector, ActivateFunction function) {
+        int len = vector.getLen();
+        Vector result = new Vector(len, new float[len]);
+
+        for (int i = 0; i < len; i++)
+            result.getValues()[i] = function.process(vector.getValues()[i]);
+
+        return result;
     }
 }
 
