@@ -1,5 +1,7 @@
 package ru.sashasuper.io;
 
+import ru.sashasuper.logic.Dataset;
+import ru.sashasuper.logic.IDXDataset;
 import ru.sashasuper.logic.Vector;
 
 import java.io.BufferedInputStream;
@@ -7,9 +9,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import static java.util.AbstractMap.SimpleEntry;
 import static ru.sashasuper.utils.Assertions.thr;
 
 public class IDXReader {
@@ -48,25 +51,22 @@ public class IDXReader {
         return new Vector(length, array);
     }
 
-    private HashMap<Integer, ArrayList<Vector>> readIDX
+    private List<SimpleEntry<Vector, Integer>> readIDX
             (InputStream imageInput, InputStream labelInput, int pixels, int images) throws IOException {
 
-        HashMap<Integer, ArrayList<Vector>> result = new HashMap<>();
+        List<SimpleEntry<Vector, Integer>> result = new ArrayList<>(images);
         for(int i = 0; i < images; i++) {
             Vector vector = readImageInVector(imageInput, pixels);
-            int label = labelInput.read();
 
+            int label = labelInput.read();
             thr(label < 0, "Unexpected end of file");
 
-            if(!result.containsKey(label))
-                result.put(label, new ArrayList<>());
-
-            result.get(label).add(vector);
+            result.add(new SimpleEntry<>(vector, label));
         }
         return result;
     }
 
-    public HashMap<Integer, ArrayList<Vector>> read() throws IOException {
+    public Dataset read() throws IOException {
         FileInputStream fisImages = new FileInputStream(imagesFilePath);
         FileInputStream fisLabels = new FileInputStream(labelsFilePath);
 
@@ -86,7 +86,8 @@ public class IDXReader {
             int columns = readUnsignedInt(imageInput);
             thr(rows * columns <= 0, "Wrong rows (" + rows + ") or columns (" + columns + ") size");
 
-            return readIDX(imageInput, labelInput, rows * columns, imagesCount);
+            List<SimpleEntry<Vector, Integer>> list = readIDX(imageInput, labelInput, rows * columns, imagesCount);
+            return new IDXDataset(list, 10);
         }
     }
 }
