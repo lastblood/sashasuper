@@ -12,7 +12,7 @@ public class TanH extends ActivateFunction implements Serializable {
     }
 
     public float derivative(float value){
-        float e2x = Math.getExponent(2*value);
-        return (2*(e2x - 1)*e2x)/((e2x + 1)*(e2x + 1)) + (2*e2x)/(e2x + 1);
+        float result = process(value);
+        return (1 + result) * (1 - result);
     }
 }
