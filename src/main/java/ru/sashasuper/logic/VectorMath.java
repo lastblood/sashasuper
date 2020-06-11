@@ -71,13 +71,10 @@ public class VectorMath {
 
     //Произведение вектора-столбца на вектор-строку
     public static Matrix multVectors(Vector columnVector, Vector rowVector) {
+        int columns = rowVector.getLen();
+        int rows = columnVector.getLen();
 
-        int rows = rowVector.getLen();
-        int columns = columnVector.getLen();
-
-        thr(columns != rows);
-
-        float[][] result = new float[columns][rows];
+        float[][] result = new float[rows][columns];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 result[i][j] = columnVector.getValues()[i] * rowVector.getValues()[j];
@@ -128,6 +125,16 @@ public class VectorMath {
                 newValue[x][y] = oldValues[y][x] * multiplier;
 
         return new Matrix(newValue);
+    }
+
+    public static float MSE(Vector vector, Vector error) {
+        thr(vector.getLen() != error.getLen());
+        double sum = 0;
+        for (int i = 0; i < vector.getLen(); i++) {
+            float temp = vector.getValues()[i] - error.getValues()[i];
+            sum += temp * temp;
+        }
+        return (float) (sum / vector.getLen());
     }
 }
 
