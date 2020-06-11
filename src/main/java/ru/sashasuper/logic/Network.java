@@ -4,6 +4,8 @@ import ru.sashasuper.logic.functions.ActivateFunction;
 
 import java.io.Serializable;
 
+import static ru.sashasuper.utils.Assertions.thr;
+
 public class Network implements Serializable {
     private int inputSize;
     private int outputSize;
@@ -12,12 +14,18 @@ public class Network implements Serializable {
     private ActivateFunction activateFunction;
     private float learningRate;
 
-    public Network(int inputSize, int outputSize, int layerCount, Matrix[] weightMatrices,
+    public Network(int inputSize, int outputSize, int hiddenLayerCount, Matrix[] weightMatrices,
                    ActivateFunction activateFunction, float learningRate) {
+
+        thr(weightMatrices == null || weightMatrices.length != hiddenLayerCount + 1);
+        thr(learningRate <= 0 || learningRate > 1);
+
+        thr(weightMatrices[0].getColumns() != inputSize);
+        thr(weightMatrices[hiddenLayerCount].getRows() != outputSize);
 
         this.inputSize = inputSize;
         this.outputSize = outputSize;
-        this.layerCount = layerCount;
+        this.layerCount = hiddenLayerCount;
         this.weightMatrices = weightMatrices;
         this.activateFunction = activateFunction;
         this.learningRate = learningRate;
@@ -34,7 +42,7 @@ public class Network implements Serializable {
         return outputSize;
     }
 
-    public int getLayerCount() {
+    public int getHiddenLayerCount() {
         return layerCount;
     }
 
