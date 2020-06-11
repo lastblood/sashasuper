@@ -1,6 +1,7 @@
 package ru.sashasuper.logic;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
@@ -31,5 +32,10 @@ public class Matrix implements Serializable {
 
     public float[][] getValues() {
         return values;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.deepToString(values);
     }
 }
