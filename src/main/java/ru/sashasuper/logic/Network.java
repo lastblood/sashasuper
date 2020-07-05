@@ -112,7 +112,6 @@ public class Network implements Serializable {
     // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
     // currentIndex указывает на индекс текущей меняемой матрицы
     private Vector backPropagationIter(Vector[] networkState, Vector error_layer, int currentIndex) {
-        // networkState.size = matrices.size + 1
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
 
         Vector currentLayer = networkState[currentIndex + 1];
@@ -123,9 +122,6 @@ public class Network implements Serializable {
 
         // Вектор дельты
         Vector delta_layer = multElements(error_layer, gradient_layer);
-
-//        System.out.println("delta_layer = " + Arrays.toString(delta_layer.getValues()));
-//        System.out.println("lastLayer = " + Arrays.toString(lastLayer.getValues()));
 
 //БЫЛО        Matrix temp = multVectors(delta_layer, lastLayer);
         Matrix temp = multVectors(lastLayer, delta_layer);

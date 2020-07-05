@@ -12,7 +12,7 @@ class MatrixGeneratorTest {
         //Сгенерированные элементы матрицы лежат в указанном диапазоне
         MatrixGenerator mg = new MatrixGenerator();
         float min = 3.47f, max = 8.12f;
-        Matrix matrix = mg.randomMatrixInRange(600,90, min, max);
+        Matrix matrix = mg.randomMatrix(600,90, min, max);
         float[][] values =  matrix.getValues();
         for (float[] value : values) {
             for (float v : value) {
@@ -20,7 +20,6 @@ class MatrixGeneratorTest {
                 assertTrue(v < max);
             }
         }
-
     }
 
     @Test
