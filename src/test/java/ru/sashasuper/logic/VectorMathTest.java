@@ -1,7 +1,10 @@
 package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
+import ru.sashasuper.logic.functions.ReLU;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.sashasuper.logic.TestUtils.*;
 import static ru.sashasuper.logic.VectorMath.*;
 
 class VectorMathTest {
@@ -37,6 +40,35 @@ class VectorMathTest {
     void matrixVectorTest3() {
         float[][] matrix = {{3,1,7,8}, {5,9,0,-4}};
         float[] vector = {3,4};
+
+        Matrix m = new Matrix(matrix);
+        Vector v = new Vector(vector);
+
+        try {
+            Vector res = multMatrixVector(m, v);
+            fail();
+        } catch(Throwable t){
+
+        }
+    }
+
+    @Test
+    void multMatrixVectorTransposedTest1() {
+        float[][] matrix = {{3,1,7,8}, {5,9,0,-4}};
+        float[] vector = {-30, -40};
+
+        Matrix m = new Matrix(matrix);
+        Vector v = new Vector(vector);
+
+        float[] result = {-290, -390, -210, -80};
+        Vector res = multMatrixVectorTransposed(m, v);
+        assertArrayEquals(result, res.getValues());
+    }
+
+    @Test
+    void multMatrixVectorTransposedTest2() {
+        float[][] matrix = {{0,0,-7}, {-1,0,0}};
+        float[] vector = {0, 0, 2};
 
         Matrix m = new Matrix(matrix);
         Vector v = new Vector(vector);
@@ -92,7 +124,7 @@ class VectorMathTest {
     }
 
     @Test
-    void subtractionTest2() {
+    void subElementsTest2() {
         float[] fVector = {1, 32, -22, 0, 1, 4};
         float[] sVector = {4, 5};
 
@@ -123,17 +155,37 @@ class VectorMathTest {
 
     @Test
     void multVectorsTest2() {
-        float[] column = {4,3,6,7};
-        float[] row = {9,11,2};
-
+        float[] column = {1,2};
+        float[] row = {10,20,-30};
         Vector v1 = new Vector(column);
         Vector v2 = new Vector(row);
 
-        try {
-            Matrix res = multVectors(v1, v2);
-            fail();
-        } catch (Throwable t) {
+        float[][] result = {{10,20,-30}, {20,40,-60}};
+        Matrix res = multVectors(v1, v2);
+        assertMatricesEquals(res, new Matrix(result));
+    }
 
-        }
+    @Test
+    void applyToVectorTest() {
+        Vector v = new Vector(3.0f, 0, -1.7f, 0.00001f, -0.0f);
+        Vector res1 = applyToVector(v, new ReLU());
+        assertArrayEquals(res1.getValues(), new float[]{3.0f, 0,0, 0.00001f, 0});
+        Vector res2 = applyToVector(v, new ReLU(), true);
+        assertArrayEquals(res2.getValues(), new float[]{1, 0, 0, 1, 0});
+        assertArrayEquals(applyToVector(v, new ReLU(), false).getValues(), res1.getValues());
+    }
+
+    @Test
+    void multMatrixByTTest() {
+        Matrix matrix = new Matrix(new float[][]{{1,2,3}, {3,4,5}});
+        Matrix result = multMatrixByT(matrix, 3);
+        assertMatricesEquals(result, new Matrix(new float[][]{{3,9},{6,12},{9,15}}));
+    }
+
+    @Test
+    void subMatricesTest() {
+        Matrix result = subMatrices(new Matrix(new float[][]{{1, 2}, {3, 4}, {5, 6}}),
+                                    new Matrix(new float[][]{{-1, -2}, {0, 0}, {5, 6}}));
+        assertMatricesEquals(result, new Matrix(new float[][]{{2, 4}, {3, 4}, {0, 0}}));
     }
 }

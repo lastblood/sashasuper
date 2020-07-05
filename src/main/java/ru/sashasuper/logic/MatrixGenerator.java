@@ -12,7 +12,7 @@ public class MatrixGenerator {
         this.random = random;
     }
 
-    public Matrix randomMatrixInRange(int rows, int columns, float min, float max) {
+    public Matrix randomMatrix(int rows, int columns, float min, float max) {
         if(rows < 0 || columns < 0)
             throw new IllegalArgumentException("Rows and columns should be > 0");
 
@@ -30,6 +30,6 @@ public class MatrixGenerator {
     }
 
     public Matrix randomMatrix(int rows, int columns) {
-        return randomMatrixInRange(rows, columns, -1, 1);
+        return randomMatrix(rows, columns, -1, 1);
     }
 }

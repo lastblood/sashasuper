@@ -7,7 +7,7 @@ public class TanH extends ActivateFunction implements Serializable {
     }
 
     public float process(float value){
-        float e2x = Math.getExponent(2*value);
+        float e2x = (float) Math.pow(Math.E, 2 * value);
         return (e2x - 1)/(e2x + 1);
     }
 
