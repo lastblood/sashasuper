@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class BackPropagationTest {
     @Test
     void linearIdentity() {
-        Network nn = new Network(3, 1, 0,
-            new Matrix[]{ new Matrix(new float[][]{{5, -7, 0}}) }, new Identity(), .05f);
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{5, -7, 0}}) }, new Identity(), .05f);
         Vector half = new Vector(.5f, .5f, .5f);
 
 //        System.out.println("processResult = " + Neural.process(nn, half));
@@ -50,17 +49,13 @@ public class BackPropagationTest {
 
     @Test
     void halfMultiplierLinear() {
-        Network nn = new Network(1, 1, 0,
-                new Matrix[]{ new Matrix(new float[][]{{1}}) }, new Identity(), 0.1f);
-
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{1}}) }, new Identity(), 0.1f);
         halfMultiplier(nn, 30);
     }
 
     @Test
     void halfMultiplierLU() {
-        Network nn = new Network(1, 1, 0,
-                new Matrix[]{ new Matrix(new float[][]{{1}}) }, new ReLU(), 0.1f);
-
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{1}}) }, new ReLU(), 0.1f);
         halfMultiplier(nn, 30);
     }
 
@@ -69,7 +64,7 @@ public class BackPropagationTest {
     void xor() {
         MatrixGenerator gen = new MatrixGenerator(new java.util.Random(100));
 
-        Network nn = new Network(2, 1, 2, new Matrix[]{
+        Network nn = new Network(new Matrix[]{
                 gen.randomMatrix(4, 2, 0.1f, 1),
                 gen.randomMatrix(4, 4, 0.1f, 1),
                 gen.randomMatrix(1, 4, 0.1f, 1)},

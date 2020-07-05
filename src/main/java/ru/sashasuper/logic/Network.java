@@ -12,28 +12,22 @@ public class Network implements Serializable {
     private int inputSize;
     private int outputSize;
     private int layerCount;
+
     private Matrix[] weightMatrices;
     private ActivateFunction activateFunction;
     private float learningRate;
 
-    public Network(int inputSize, int outputSize, int hiddenLayerCount, Matrix[] weightMatrices,
-                   ActivateFunction activateFunction, float learningRate) {
-
-        thr(weightMatrices == null || weightMatrices.length != hiddenLayerCount + 1);
+    public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate) {
+        thr(weightMatrices == null);
         thr(learningRate <= 0 || learningRate > 1);
 
-        thr(weightMatrices[0].getColumns() != inputSize);
-        thr(weightMatrices[hiddenLayerCount].getRows() != outputSize);
+        this.inputSize = weightMatrices[0].getColumns();
+        this.outputSize = weightMatrices[weightMatrices.length - 1].getRows();
+        this.layerCount = weightMatrices.length - 1;
 
-        this.inputSize = inputSize;
-        this.outputSize = outputSize;
-        this.layerCount = hiddenLayerCount;
         this.weightMatrices = weightMatrices;
         this.activateFunction = activateFunction;
         this.learningRate = learningRate;
-    }
-
-    private Network() {
     }
 
     public int getInputSize() {
@@ -60,6 +54,9 @@ public class Network implements Serializable {
         return learningRate;
     }
 
+    public void setLearningRate(float learningRate) {
+        this.learningRate = learningRate;
+    }
 
     public Vector process(Vector input) {
         Vector[] vectors = processUniversally(input, false);
