@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.functions.ReLU;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.sashasuper.logic.TestUtils.*;
 import static ru.sashasuper.logic.VectorMath.*;
 
 class VectorMathTest {
@@ -154,40 +155,24 @@ class VectorMathTest {
 
     @Test
     void multVectorsTest2() {
-        float[] column = {4,3,6,7};
-        float[] row = {9,11,2};
-
+        float[] column = {1,2};
+        float[] row = {10,20,-30};
         Vector v1 = new Vector(column);
         Vector v2 = new Vector(row);
 
-        try {
-            Matrix res = multVectors(v1, v2);
-            fail();
-        } catch (Throwable t) {
-
-        }
+        float[][] result = {{10,20,-30}, {20,40,-60}};
+        Matrix res = multVectors(v1, v2);
+        assertMatricesEquals(res, new Matrix(result));
     }
 
     @Test
     void applyToVectorTest() {
-        Vector v = new Vector(new float[]{3.0f, 0, -1.7f, 0.00001f, -0.0f});
+        Vector v = new Vector(3.0f, 0, -1.7f, 0.00001f, -0.0f);
         Vector res1 = applyToVector(v, new ReLU());
         assertArrayEquals(res1.getValues(), new float[]{3.0f, 0,0, 0.00001f, 0});
         Vector res2 = applyToVector(v, new ReLU(), true);
         assertArrayEquals(res2.getValues(), new float[]{1, 0, 0, 1, 0});
         assertArrayEquals(applyToVector(v, new ReLU(), false).getValues(), res1.getValues());
-    }
-
-    private void assertMatricesEquals(Matrix matrix1, Matrix matrix2) {
-        assertNotNull(matrix1);
-        assertNotNull(matrix2);
-
-        assertEquals(matrix1.getColumns(), matrix2.getColumns());
-        assertEquals(matrix1.getRows(), matrix2.getRows());
-
-        for (int i = 0; i < matrix1.getRows(); i++) {
-            assertArrayEquals(matrix1.getValues()[i], matrix2.getValues()[i]);
-        }
     }
 
     @Test
