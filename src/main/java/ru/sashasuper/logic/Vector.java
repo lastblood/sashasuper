@@ -8,7 +8,7 @@ import static ru.sashasuper.utils.Assertions.thr;
 public class Vector implements Serializable {
     private float[] values;
 
-    public Vector(float[] values) {
+    public Vector(float ... values) {
         thr(values.length == 0);
         this.values = values;
     }
