@@ -37,12 +37,12 @@ public class TestUtils {
     public static void assertVectorsEquals(Vector vector1, Vector vector2) {
         assertNotNull(vector1);
         assertNotNull(vector2);
-        assertArrayEquals(vector1.getValues(), vector2.getValues());
+        assertEquals(vector1, vector2);
     }
 
-    public static void assertVectorsEquals(Vector vector, float oneElementVector) {
+    public static void assertVectorsEquals(Vector vector, float ... elements) {
         assertNotNull(vector);
-        assertEquals(1, vector.getLen());
-        assertEquals(oneElementVector, vector.getValues()[0]);
+        assertTrue(elements.length >= 1);
+        assertVectorsEquals(vector, new Vector(elements));
     }
 }
