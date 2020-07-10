@@ -10,35 +10,27 @@ import static ru.sashasuper.utils.Assertions.thr;
 
 
 // 09.07.20 Отныне векторы всегда будут хранить в себе на единицу больше памяти,
-// вне зависимости от того, используют ли они сдвиг или нет. Это сделано для
-// упрощения API, который теперь не должен учитывать разные длины массива внутри
-// Vector, в зависимости от флажка, и для оптимизаций работы с памятью: лучше
-// один раз скопировать массив при создании, чем постоянно потом гонять туда-сюда.
-// Т.о. теперь переход от biased к non-biased версии Vector не требует копирования
-// содержимого массива, а только изменения флажка, либо создания объекта-копии с
-// измененным только лишь флажком (небезопасно для изменения данных, но что поделать)
+// вне зависимости от того, используют ли они сдвиг или нет. При этом класс
+// не гарантирует, что последний элемент, bias, будет содержать единицу, однако
+// он не будет сравниваться при вызове метода equals, не будет учитываться при
+// сравнении, и его разрешается спокойно изменять любой функции извне
 
 public class Vector implements Serializable, Iterable {
     // Содержит values.length-1 "значащих" элементов и сдвиг на последнем
     // сдвиг не обязан быть 1, но любая сторонняя функция вправе его изменить
     private float[] values;
 
-    // теперь не влияет на содержимое массива, как и на
-    private boolean biased = false;
-
     // Всегда считает, что values - non-biased и всегда делает из него biased
     public Vector(float ... values) {
         thr(values.length < 1);
         this.values = makeItBiased(values);
-        this.biased = true;
     }
 
     // isBiased == true -> массив записывается без изменений, biased=true
     // isBiased == false -> массив изменяется согласно контракту класса, biased=false
     // Т.о. при true, пользователь API берет на себя ответственность за наличие места под bias
     public Vector(boolean isBiased, float ... values) {
-        thr(values.length < (isBiased ? 2 : 1));
-        this.biased = isBiased;
+        thr(values.length < (isBiased ? 2 : 1), "Недостаточная длина вектора для создания");
         this.values = isBiased ? values : makeItBiased(values);
     }
 
@@ -52,24 +44,24 @@ public class Vector implements Serializable, Iterable {
     private Vector() {
     }
 
+    public void doBias() {
+        values[values.length - 1] = 1;
+    }
 
     // Всегда non-biased вне зависимости от `biased`
     public int getNonBiasedLength() {
         return values.length - 1;
     }
 
-    // Длину со сдвигом, если biased, без сдвига - если non-biased
-    public int getRealLength() {
-        return values.length - (isBiased() ? 1 : 0);
-    }
-
     public int getFullLen() {
         return values.length;
     }
 
+    public int getLength(boolean biased) {
+        return values.length - (biased ? 0 : 1);
+    }
 
-
-    public float[] getAllValues() {
+    public float[] getValues() {
         return values;
     }
 
@@ -77,9 +69,7 @@ public class Vector implements Serializable, Iterable {
     // todo: а зочем?
     private SoftReference<float[]> nonBiasedValues = null;
     public float[] getNonBiasedValues() {
-        if(!isBiased()) {
-            return getAllValues();
-        } else if(nonBiasedValues == null || nonBiasedValues.get() == null) {
+        if(nonBiasedValues == null || nonBiasedValues.get() == null) {
             float[] croppedArray = new float[values.length - 1];
             System.arraycopy(values, 0, croppedArray, 0, croppedArray.length);
             nonBiasedValues = new SoftReference<>(croppedArray);
@@ -89,30 +79,10 @@ public class Vector implements Serializable, Iterable {
         return nonBiasedValues.get();
     }
 
-    public boolean isBiased() {
-        return biased;
-    }
-
-
-    // Всегда возвращает biased-версию, считая, что ему передан массив только
-    // значащих элементов, поэтому копирует его в новый, на единичку больший
-    public static Vector of(float ... values) {
-        return new Vector(true, makeItBiased(values));
-    }
-
-    // Всегда возвращает biased-версию этого vector
-    // (всегда тот же внутренний массив, и потенциально тот же объект Vector)
-    public static Vector of(Vector vector) {
-        return vector.isBiased() ? vector : new Vector(true, vector.values);
-    }
-
-
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Vector{");
-        sb.append("values=").append(Arrays.toString(values)).append('}');
-        return sb.toString();
+        return Arrays.toString(values);
     }
 
     // Игнорирует biased
@@ -123,8 +93,8 @@ public class Vector implements Serializable, Iterable {
 
         Vector vector = (Vector) o;
 
-        if(vector.getRealLength() == getRealLength())
-            for (int i = 0; i < getRealLength(); i++)
+        if(vector.getNonBiasedLength() == getNonBiasedLength())
+            for (int i = 0; i < getNonBiasedLength(); i++)
                 if(vector.values[i] != values[i])
                     return false;
 
@@ -134,7 +104,7 @@ public class Vector implements Serializable, Iterable {
     @Override
     public int hashCode() {
         int result = 0x811c9dc5;
-        for (int i = 0; i < getRealLength(); i++)
+        for (int i = 0; i < getNonBiasedLength(); i++)
             result = (result * 0x01000193) ^ Float.floatToIntBits(values[i]);
 
         return result;
@@ -147,7 +117,7 @@ public class Vector implements Serializable, Iterable {
 
             @Override
             public boolean hasNext() {
-                return iter < getRealLength();
+                return iter < getNonBiasedLength();
             }
 
             @Override
