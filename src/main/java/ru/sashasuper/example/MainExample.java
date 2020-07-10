@@ -2,6 +2,7 @@ package ru.sashasuper.example;
 
 import ru.sashasuper.logic.*;
 import ru.sashasuper.logic.functions.*;
+import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -19,9 +20,9 @@ public class MainExample {
 
         int layerCount = 1;
         Matrix[] weightMatrices = new Matrix[layerCount + 1];
-        MatrixGenerator matrixGenerator = new MatrixGenerator();
-        weightMatrices[0] = matrixGenerator.randomMatrix(2, 2, -2, 2);
-        weightMatrices[1] = matrixGenerator.randomMatrix(1, 2, -2, 2);
+        RandomMatrixGenerator randomMatrixGenerator = new RandomMatrixGenerator();
+        weightMatrices[0] = randomMatrixGenerator.generateMatrix(2, 2, -2, 2);
+        weightMatrices[1] = randomMatrixGenerator.generateMatrix(1, 2, -2, 2);
 
         System.out.println("weightMatrices0 = " + Arrays.deepToString(weightMatrices[0].getValues()));
         System.out.println("weightMatrices1 = " + Arrays.deepToString(weightMatrices[1].getValues()));

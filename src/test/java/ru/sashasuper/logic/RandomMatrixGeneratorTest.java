@@ -1,6 +1,7 @@
 package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
+import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 
 import java.util.Arrays;
 
