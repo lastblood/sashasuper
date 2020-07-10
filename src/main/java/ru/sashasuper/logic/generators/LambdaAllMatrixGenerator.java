@@ -1,4 +1,6 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.logic.generators;
+
+import ru.sashasuper.logic.Matrix;
 
 import java.util.AbstractMap;
 import java.util.function.BiFunction;
@@ -6,15 +8,15 @@ import java.util.stream.IntStream;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class CustomMatrixGenerator extends MatrixGenerator {
+public class LambdaAllMatrixGenerator extends MatrixGenerator {
 
     private BiFunction<Integer, Integer, Matrix> internalGenerator = null;
 
-    public CustomMatrixGenerator(BiFunction<Integer, Integer, Matrix> internalGenerator) {
+    public LambdaAllMatrixGenerator(BiFunction<Integer, Integer, Matrix> internalGenerator) {
         this.internalGenerator = internalGenerator;
     }
 
-    protected CustomMatrixGenerator() {
+    protected LambdaAllMatrixGenerator() {
     }
 
     @Override

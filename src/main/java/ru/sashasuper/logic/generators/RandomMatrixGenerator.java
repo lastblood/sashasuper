@@ -1,11 +1,13 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.logic.generators;
+
+import ru.sashasuper.logic.Matrix;
 
 import java.util.Random;
 import java.util.function.BiFunction;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class RandomMatrixGenerator extends CustomMatrixGenerator {
+public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
     private Random random = null;
 
     private float defaultMin = 0, defaultMax = 1;
