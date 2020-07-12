@@ -77,8 +77,13 @@ public class IDXReader {
         FileInputStream fisImages = new FileInputStream(imagesFilePath);
         FileInputStream fisLabels = new FileInputStream(labelsFilePath);
 
-        try(InputStream imageInput = gzippedImages ? new GZIPInputStream(new BufferedInputStream(fisImages)) : new BufferedInputStream(fisImages);
-            InputStream labelInput = gzippedLabels ? new GZIPInputStream(new BufferedInputStream(fisLabels)) : new BufferedInputStream(fisLabels)) {
+        try(InputStream imageInput = gzippedImages
+                    ? new GZIPInputStream(new BufferedInputStream(fisImages))
+                    : new BufferedInputStream(fisImages);
+
+            InputStream labelInput = gzippedLabels
+                    ? new GZIPInputStream(new BufferedInputStream(fisLabels))
+                    : new BufferedInputStream(fisLabels)) {
 
             int magicNumberImages = readUnsignedInt(imageInput);
             thr(magicNumberImages != 2051, "Corrupted images file");
