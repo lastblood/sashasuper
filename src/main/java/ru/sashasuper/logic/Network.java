@@ -226,11 +226,19 @@ public class Network implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         Network c = (Network) super.clone();
-        Matrix[] matrices = new Matrix[weightMatrices.length];
-        for (int i = 0; i < matrices.length; i++)
-            matrices[i] = (Matrix) getWeightMatrices()[i].clone();
 
+        Matrix[] matrices = new Matrix[weightMatrices.length];
+        for (int i = 0; i < matrices.length; i++) {
+            matrices[i] = (Matrix) getWeightMatrices()[i].clone();
+        }
         c.weightMatrices = matrices;
+
+//        if(c.weightMatrices[0].getValues()[1] == weightMatrices[0].getValues()[1]) {
+//            System.out.println("matrix ==");
+//        } else {
+//            System.out.println("matrix Not");
+//        }
+
         return c;
     }
 }
