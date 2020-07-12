@@ -2,9 +2,7 @@ package ru.sashasuper.logic;
 
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 // Допытливый зритель, конечно, спросит: "Ну и нафига он нужен абстрактным"?
 // Отвечаю: для возможной ленивой инициализации
