@@ -1,5 +1,6 @@
 package ru.sashasuper.logic.neural;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.Matrix;
 import ru.sashasuper.logic.Network;
