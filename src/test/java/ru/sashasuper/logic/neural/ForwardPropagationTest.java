@@ -30,7 +30,7 @@ public class ForwardPropagationTest {
         assertVectorsEquals(nn.process(new Vector(10, -0.0f, -10)), 20);
         assertVectorsEquals(nn.process(new Vector(-10, -10, 50)), 10);
 
-        Vector[] vs = nn.processUniversally(new Vector(0, 1, 2), true);
+        Vector[] vs = nn.processRemember(new Vector(0, 1, 2));
         assertEquals(2, vs.length);
         assertVectorsEquals(vs[0], new Vector(0,1,2));
         assertVectorsEquals(vs[1], 0);
@@ -50,7 +50,7 @@ public class ForwardPropagationTest {
                                                 new Matrix(new float[][]{{-5, 2}}) },
                 new ReLU(), 0.1f);
         Vector input = new Vector(5, 4);
-        Vector[] vectors = nn.processUniversally(new Vector(5, 4), true);
+        Vector[] vectors = nn.processRemember(new Vector(5, 4));
 
         assertEquals(3, vectors.length);
 

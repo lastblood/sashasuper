@@ -1,12 +1,12 @@
 package ru.sashasuper.logic.neural;
 
 import org.junit.jupiter.api.Test;
-import ru.sashasuper.logic.*;
+import ru.sashasuper.logic.Matrix;
+import ru.sashasuper.logic.Network;
+import ru.sashasuper.logic.NetworkF;
+import ru.sashasuper.logic.Vector;
 import ru.sashasuper.logic.functions.Identity;
-import ru.sashasuper.logic.functions.Logistic;
 import ru.sashasuper.logic.functions.ReLU;
-import ru.sashasuper.logic.functions.TanH;
-import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -25,10 +25,7 @@ public class BackPropagationBiasedTest {
 
         for (int i = 0; i <= epochs; i++) {
             if(i % 10 == 0)
-//                System.out.println("nn = " + Arrays.toString(nn.getWeightMatrices()));
             for (AbstractMap.SimpleEntry<Vector, Vector> entry : entries) {
-//                System.out.println("entry.getKey() = " + entry.getKey());
-//                System.out.println("entry.getValue() = " + entry.getValue());
                 nn.backPropagation(entry.getKey(), entry.getValue());
             }
         }
@@ -37,23 +34,31 @@ public class BackPropagationBiasedTest {
 
         for(float i = 0; i <= 1.001; i += 0.05) {
             float j = i / 2;
-            System.out.println(i + " " + nn.process(i).getValues()[0]);
-//            assertTrue(Math.abs(nn.process(i).getValues()[0] - j) < 0.0001);
+//            System.out.println(i + " " + nn.process(i).getValues()[0]);
+            assertTrue(Math.abs(nn.process(i).getValues()[0] - j) < 0.0001);
         }
     }
 
     @Test
     void halfMultiplierLinear() {
         Network nn = new Network(
-                    new Matrix[]{new Matrix(new float[][]{{0.6f, 0.2f}})},
-                new Identity(), 0.1f, true);
-        halfMultiplier(nn, 150);
+                    new Matrix[]{new Matrix(new float[][]{{0.6f, 0.0f}})},
+                new Identity(), 0.07f, true);
+        halfMultiplier(nn, 5000);
+    }
+
+    @Test
+    void halfMultiplierLinearF() {
+        Network nn = new NetworkF(
+                new Matrix[]{new Matrix(new float[][]{{0.6f, 0.0f}})},
+                new Identity(), 0.07f, true);
+        halfMultiplier(nn, 5000);
     }
 
     @Test
     void halfMultiplierLU() {
         Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.6f, 0.2f}}) },
                 new ReLU(), 0.1f, true);
-        halfMultiplier(nn, 150);
+        halfMultiplier(nn, 5000);
     }
 }
