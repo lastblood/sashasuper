@@ -1,15 +1,17 @@
 package ru.sashasuper.logic;
 
 import ru.sashasuper.logic.functions.ActivateFunction;
+import ru.sashasuper.logic.functions.ReLU;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import static ru.sashasuper.logic.VectorMath.*;
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class Network implements Serializable {
+public class Network implements Serializable, Cloneable {
     private int inputSize;
     private int outputSize;
     private int layerCount;
@@ -77,13 +79,6 @@ public class Network implements Serializable {
         this.learningRate = learningRate;
     }
 
-    public Vector process(Vector input) {
-        Vector[] vectors = processUniversally(input, false);
-        thr(vectors.length != 1 || vectors[0] == null);
-        thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
-        return vectors[0];
-    }
-
     // Всегда воспринимает, как non-biased input
     public Vector process(float ... values) {
         return process(new Vector(values));
@@ -93,10 +88,19 @@ public class Network implements Serializable {
         return process(new Vector(biased, values));
     }
 
-    // Применение матрицы к вектору (ТОЛЬКО ЗДЕСЬ), применение функции к вектору
-    // Почему бы и не объединить обе эти операции? Проще будет реализовать исполнение на видеокартах
-    // Умеет запоминать состояние промежуточных векторов внутри сети для использования в backpropagation
-    public Vector[] processUniversally(Vector input, boolean rememberSteps) {
+    public Vector process(Vector input) {
+        thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
+
+        Vector currentVector = input;
+        for (int i = 0; i < getWeightMatrices().length; i++) {
+            currentVector = multMatrixVector(getWeightMatrices()[i], currentVector, withBias);
+            currentVector = applyToVector(currentVector, getActivateFunction());
+        }
+
+        return currentVector;
+    }
+
+    public Vector[] processRemember(Vector input) {
         thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
 
         Vector[] memories = new Vector[getHiddenLayerCount() + 2];
@@ -107,16 +111,16 @@ public class Network implements Serializable {
             // todo: оптимизировать матричные операции для создания вектора сразу с bias
             currentVector = multMatrixVector(getWeightMatrices()[i], currentVector, withBias);
             currentVector = applyToVector(currentVector, getActivateFunction());
-            if (rememberSteps) memories[i + 1] = currentVector;
+            memories[i + 1] = currentVector;
         }
 
-        return rememberSteps ? memories : new Vector[]{currentVector};
+        return memories;
     }
 
     // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
     public void backPropagation(Vector input, Vector expectedOutput) {
         // Прогнать прямое распространение и запомнить результаты
-        Vector[] vectors = processUniversally(input, true);
+        Vector[] vectors = processRemember(input);
         thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
         thr(vectors.length != getHiddenLayerCount() + 2);
@@ -175,14 +179,42 @@ public class Network implements Serializable {
         return multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
     }
 
-    public double test(Dataset dataset) {
+    private static int getMaxIndex(Vector v) {
+        int max = 0;
+        for (int i = 1; i < v.getValues().length - 1; i++) {
+            if(v.getValues()[i] > v.getValues()[max]) {
+                max = i;
+            }
+        }
+        return max;
+    }
+
+    public MomentumStat test(Dataset dataset) {
+//        System.out.println("getWeightMatrices() = " + Arrays.toString(getWeightMatrices()));
+        float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
         double resultError = 0.0;
+        int right = 0, wrong = 0;
+
         for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
             Vector resultVector = process(entry.getKey());
+
+            int ind1 = getMaxIndex(entry.getValue()), ind2 = getMaxIndex(resultVector);
+            thr(ind1 < 0 || ind1 > 9 || ind2 < 0 || ind2 > 9);
+
+            if(ind1 == ind2)
+                right++;
+            else
+                wrong++;
+
             float mse = VectorMath.MSE(resultVector, entry.getValue());
+
+            min = Float.min(mse, min);
+            max = Float.max(mse, max);
+
             resultError += mse;
         }
-        return resultError;
+
+        return new MomentumStat(right, wrong, min, max, resultError);
     }
 
     public void learnIteration(Dataset dataset) {
