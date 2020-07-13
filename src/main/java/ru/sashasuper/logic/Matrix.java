@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class Matrix implements Serializable {
+public class Matrix implements Serializable, Cloneable {
     private int rows, columns;
     private float[][] values;
 
@@ -37,5 +37,19 @@ public class Matrix implements Serializable {
     @Override
     public String toString() {
         return Arrays.deepToString(values);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+//        return new Matrix(getValues().clone());
+        float[][] array = new float[getRows()][getColumns()];
+
+        for(int i = 0; i < getRows(); i++) {
+            for(int j = 0; j < getColumns(); j++) {
+                array[i][j] = values[i][j];
+            }
+        }
+
+        return new Matrix(array);
     }
 }
