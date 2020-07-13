@@ -41,12 +41,19 @@ public class IDXReader {
         return (int) temp;
     }
 
+    private byte[] buf = null;
     // Сразу переводит в негатив, где 255 - белый
     private Vector readImageInVector(InputStream inImage, int length) throws IOException {
+        if(buf == null || buf.length == length) {
+            buf = new byte[length];
+            int read = inImage.readNBytes(buf, 0, length);
+            if(read != length)
+                throw new IOException("File is corrupted");
+        }
         float[] array = new float[length];
 
         for (int pixel = 0; pixel < length; pixel++)
-            array[pixel] = 255 - inImage.read();
+            array[pixel] = buf[pixel] / 255f;
 
         return new Vector(array);
     }
@@ -70,8 +77,8 @@ public class IDXReader {
         FileInputStream fisImages = new FileInputStream(imagesFilePath);
         FileInputStream fisLabels = new FileInputStream(labelsFilePath);
 
-        try(InputStream imageInput = gzippedImages ? new GZIPInputStream(fisImages) : new BufferedInputStream(fisImages);
-            InputStream labelInput = gzippedLabels ? new GZIPInputStream(fisLabels) : new BufferedInputStream(fisLabels)) {
+        try(InputStream imageInput = gzippedImages ? new GZIPInputStream(new BufferedInputStream(fisImages)) : new BufferedInputStream(fisImages);
+            InputStream labelInput = gzippedLabels ? new GZIPInputStream(new BufferedInputStream(fisLabels)) : new BufferedInputStream(fisLabels)) {
 
             int magicNumberImages = readUnsignedInt(imageInput);
             thr(magicNumberImages != 2051, "Corrupted images file");
