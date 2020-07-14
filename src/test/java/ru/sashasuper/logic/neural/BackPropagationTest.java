@@ -8,6 +8,7 @@ import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -61,39 +62,34 @@ public class BackPropagationTest {
     }
 
 
-
-    // TODO: 07.07.2020 fix
-//    @Test
+    @Test
     void xor() {
-        RandomMatrixGenerator gen = new RandomMatrixGenerator(new java.util.Random(100), 0.01f, 1f);
+        Random rand = new Random(101);
+        RandomMatrixGenerator gen = new RandomMatrixGenerator(rand, 0.1f, 0.7f);
 
-        Network nn = new Network(new RandomMatrixGenerator(0.1f, 0.8f).generateMatrices(true, 2, 4, 4, 1),
-                new ReLU(), 0.1f, true);
+        Network nn = new Network(gen.generateMatrices(true, 2, 4, 2),
+                new ReLU(), 0.03f, true);
 
-        SimpleEntry<Vector, Vector>[] vectors = new SimpleEntry[]{
-                new SimpleEntry<>(new Vector(0, 0), new Vector(0)),
-                new SimpleEntry<>(new Vector(0, 1), new Vector(1)),
-                new SimpleEntry<>(new Vector(1, 0), new Vector(1)),
-                new SimpleEntry<>(new Vector(1, 1), new Vector(0))
-        };
+        List<SimpleEntry<Vector, Vector>> vectors = List.of(
+                new SimpleEntry<>(new Vector(0, 0), new Vector(1, 0)),
+                new SimpleEntry<>(new Vector(0, 1), new Vector(0, 1)),
+                new SimpleEntry<>(new Vector(1, 0), new Vector(0, 1)),
+                new SimpleEntry<>(new Vector(1, 1), new Vector(1, 0))
+        );
 
-        for (int i = 0; i < 100; i++) {
-            for (SimpleEntry<Vector, Vector> entry : vectors) {
+        for (int i = 0; i < 800; i++) {
+            for (int j = 0; j < 4; j++) {
+                SimpleEntry<Vector, Vector> entry = vectors.get(rand.nextInt(4));
                 nn.backPropagation(entry.getKey(), entry.getValue());
             }
         }
-
-//        System.out.println("nn = " + Arrays.toString(nn.getWeightMatrices()));
-
-        for (SimpleEntry<Vector, Vector> vector : vectors) {
-            System.out.print(vector.getKey() + " : ");
-            System.out.println(nn.process(vector.getKey()).getValues()[0]);
-        }
+        assertTrue(nn.test(vectors).sumMetric < 0.0001);
     }
 
 
     void hard(Network nn, int epochs) {
-        SimpleEntry<Vector, Vector>[] vectors = new SimpleEntry[]{
+        System.out.println(nn.getActivateFunction());
+        List<SimpleEntry<Vector, Vector>> vectors = List.of(
                 new SimpleEntry<>(new Vector(0, 0, 0), new Vector(0)),
                 new SimpleEntry<>(new Vector(0, 0, 1), new Vector(1)),
                 new SimpleEntry<>(new Vector(0, 1, 0), new Vector(0)),
@@ -102,48 +98,52 @@ public class BackPropagationTest {
                 new SimpleEntry<>(new Vector(1, 0, 1), new Vector(1)),
                 new SimpleEntry<>(new Vector(1, 1, 0), new Vector(0)),
                 new SimpleEntry<>(new Vector(1, 1, 1), new Vector(1))
-        };
+        );
 
         float sum = 0;
         for(int i = 0; i <= epochs; i++) {
-            for (SimpleEntry<Vector, Vector> entry : vectors) {
+            for (SimpleEntry<Vector, Vector> entry : vectors)
                 nn.backPropagation(entry.getKey(), entry.getValue());
-            }
 
-            if(i % 100 == 0) {
-                sum = 0;
-                for (SimpleEntry<Vector, Vector> entry : vectors) {
-                    Vector r = nn.process(entry.getKey());
-                    sum += VectorMath.MSE(r, entry.getValue());
-                }
-
-                System.out.println(sum);
-                if(sum < 0.01f) return;
+            if(i % 10 == 0 && nn.test(vectors).sumMetric < 0.3f && vectors.stream().noneMatch(entry ->
+                    (nn.process(entry.getKey()).getValues()[0] > 0.5) ^ (entry.getValue().getValues()[0] > 0.5))) {
+                System.out.println(i);
+                return;
             }
         }
 
-        System.out.println(Arrays.toString(nn.getWeightMatrices()));
-        System.out.println("MSE = " + sum);
-        for (SimpleEntry<Vector, Vector> entry : vectors) {
-            System.out.print(Arrays.toString(entry.getKey().getNonBiasedValues()));
-            System.out.print("(" + entry.getValue().getValues()[0] + ") : ");
-            System.out.println(nn.process(entry.getKey()).getValues()[0]);
-        }
-        fail("Too slow learning");
+        fail("Too slow learning " + nn.test(vectors).sumMetric);
     }
 
     @Test
     void rainTestLogistic() {
-        Network nn = new Network(new RandomMatrixGenerator(-0.9f, 0.9f).generateMatrices(false, 3, 3, 1),
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0), -0.9f, 0.9f)
+                    .generateMatrices(false, 3, 3, 1),
                 new Logistic(), 0.1f, false);
-        hard(nn, 5000);
+        hard(nn, 1000);
     }
 
-    // TODO: 11.07.2020 fix
-//    @Test
-//    void rainTestReLU() {
-//        Network nn = new Network(new RandomMatrixGenerator(0.5f, 0.51f).generateMatrices(false, 3, 10, 5, 3, 1),
-//                new ReLU(), 0.8f, false);
-//        hard(nn, 2000);
-//    }
+    @Test
+    void rainTestReLU() {
+        Network nn = new Network(new RandomMatrixGenerator(new Random(2),0.3f, 0.8f)
+                    .generateMatrices(false, 3, 3, 1),
+                new ReLU(), 0.03f, false);
+        hard(nn, 800);
+    }
+
+    @Test
+    void rainTestTanH() {
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.3f, 0.8f)
+                .generateMatrices(false, 3, 3, 1),
+                new TanH(), 0.03f, false);
+        hard(nn, 1000);
+    }
+
+    @Test
+    void rainTestSoft() {
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.3f, 0.8f)
+                .generateMatrices(false, 3, 2, 1),
+                new SoftPlus(), 0.03f, false);
+        hard(nn, 3000);
+    }
 }

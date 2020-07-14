@@ -195,16 +195,20 @@ public class Network implements Serializable, Cloneable {
     }
 
     public MomentumStat test(Dataset dataset) {
+        return test(dataset.getAll());
+    }
+
+    public MomentumStat test(List<AbstractMap.SimpleEntry<Vector, Vector>> entriesList) {
         float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
         double resultError = 0.0;
         int right = 0, wrong = 0;
 
-        List<AbstractMap.SimpleEntry<Vector, Vector>> getAll = new ArrayList<>(dataset.getAll());
-        Collections.shuffle(getAll);
+        List<AbstractMap.SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
+        Collections.shuffle(dataList);
 
-        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(getAll.size() / 10);
+        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(dataList.size() / 10);
 
-        for (AbstractMap.SimpleEntry<Vector, Vector> entry : getAll) {
+        for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataList) {
             Vector resultVector = process(entry.getKey());
 
             int ind1 = getMaxIndex(entry.getValue()), ind2 = getMaxIndex(resultVector);
