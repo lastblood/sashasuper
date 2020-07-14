@@ -2,11 +2,10 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.logic.functions.ActivateFunction;
 import ru.sashasuper.logic.functions.ReLU;
+import ru.sashasuper.utils.NanDefender;
 
 import java.io.Serializable;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 
 import static ru.sashasuper.logic.VectorMath.*;
 import static ru.sashasuper.utils.Assertions.thr;
@@ -35,7 +34,6 @@ public class Network implements Serializable, Cloneable {
         this.withBias = withBias;
     }
 
-    // todo: убрать этот позор
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate) {
         thr(weightMatrices == null);
         thr(learningRate <= 0 || learningRate > 1);
@@ -48,7 +46,7 @@ public class Network implements Serializable, Cloneable {
         this.activateFunction = activateFunction;
         this.learningRate = learningRate;
 
-        this.withBias = false;
+        this.withBias = true;
     }
 
     public int getInputSize() {
@@ -102,6 +100,7 @@ public class Network implements Serializable, Cloneable {
 
     public Vector[] processRemember(Vector input) {
         thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
+        thr(NanDefender.inVector(input));
 
         Vector[] memories = new Vector[getHiddenLayerCount() + 2];
         memories[0] = input;
@@ -128,6 +127,7 @@ public class Network implements Serializable, Cloneable {
 
         // Найти ошибку для выходного вектора
         Vector error_layer = subElements(vectors[getHiddenLayerCount() + 1], expectedOutput, withBias);
+        thr(NanDefender.inVector(error_layer));
 
         thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
@@ -135,6 +135,7 @@ public class Network implements Serializable, Cloneable {
         for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
             thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
             error_layer = backPropagationIter(vectors, error_layer, index);
+            thr(NanDefender.inVector(error_layer));
         }
     }
 
@@ -152,10 +153,12 @@ public class Network implements Serializable, Cloneable {
 
         Vector gradient_layer = applyToVector(currentLayer, activateFunction, true);
         // Очевидно, для identity gradient_layer всегда будет равен единице
+        thr(NanDefender.inVector(gradient_layer));
 
         // Вектор дельты
         Vector delta_layer = multElements(error_layer, gradient_layer, withBias);
 //        System.out.println("delta_layer = " + delta_layer);
+        thr(NanDefender.inVector(delta_layer));
 
         //todo: можно реализовать смешанную операцию: умножение двух векторов
 
@@ -176,7 +179,9 @@ public class Network implements Serializable, Cloneable {
         getWeightMatrices()[currentIndex] = subMatrices(current, subMatrix);
 
         // Отправляем ошибку на уровень назад
-        return multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
+        Vector result = multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
+        thr(NanDefender.inVector(result));
+        return result;
     }
 
     private static int getMaxIndex(Vector v) {
@@ -190,23 +195,30 @@ public class Network implements Serializable, Cloneable {
     }
 
     public MomentumStat test(Dataset dataset) {
-//        System.out.println("getWeightMatrices() = " + Arrays.toString(getWeightMatrices()));
         float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
         double resultError = 0.0;
         int right = 0, wrong = 0;
 
-        for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
+        List<AbstractMap.SimpleEntry<Vector, Vector>> getAll = new ArrayList<>(dataset.getAll());
+        Collections.shuffle(getAll);
+
+        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(getAll.size() / 10);
+
+        for (AbstractMap.SimpleEntry<Vector, Vector> entry : getAll) {
             Vector resultVector = process(entry.getKey());
 
             int ind1 = getMaxIndex(entry.getValue()), ind2 = getMaxIndex(resultVector);
             thr(ind1 < 0 || ind1 > 9 || ind2 < 0 || ind2 > 9);
+
+            float mse = VectorMath.MSE(resultVector, entry.getValue());
 
             if(ind1 == ind2)
                 right++;
             else
                 wrong++;
 
-            float mse = VectorMath.MSE(resultVector, entry.getValue());
+            if(ind1 != ind2 || mse > 0.7f)
+                bad.add(entry);
 
             min = Float.min(mse, min);
             max = Float.max(mse, max);
@@ -214,7 +226,10 @@ public class Network implements Serializable, Cloneable {
             resultError += mse;
         }
 
-        return new MomentumStat(right, wrong, min, max, resultError);
+        MomentumStat momentumStat = new MomentumStat(right, wrong, min, max, resultError);
+        Collections.shuffle(bad);
+        momentumStat.bad = bad;
+        return momentumStat;
     }
 
     public void learnIteration(Dataset dataset) {
@@ -232,12 +247,6 @@ public class Network implements Serializable, Cloneable {
             matrices[i] = (Matrix) getWeightMatrices()[i].clone();
         }
         c.weightMatrices = matrices;
-
-//        if(c.weightMatrices[0].getValues()[1] == weightMatrices[0].getValues()[1]) {
-//            System.out.println("matrix ==");
-//        } else {
-//            System.out.println("matrix Not");
-//        }
 
         return c;
     }

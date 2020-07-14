@@ -50,13 +50,13 @@ public class BackPropagationTest {
 
     @Test
     void halfMultiplierLinear() {
-        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f}}) }, new Identity(), 0.1f);
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f}}) }, new Identity(), 0.1f, false);
         halfMultiplier(nn, 50);
     }
 
     @Test
     void halfMultiplierReLU() {
-        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f}}) }, new ReLU(), 0.1f);
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f}}) }, new ReLU(), 0.1f, false);
         halfMultiplier(nn, 50);
     }
 
