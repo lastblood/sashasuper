@@ -53,7 +53,8 @@ public class IDXReader {
         float[] array = new float[length];
 
         for (int pixel = 0; pixel < length; pixel++)
-            array[pixel] = buf[pixel] / 255f;
+//            array[pixel] = (buf[pixel] / 32) / 8f; // todo: переделать
+             array[pixel] = Byte.toUnsignedInt(buf[pixel]) / 255f;
 
         return new Vector(array);
     }
@@ -99,7 +100,7 @@ public class IDXReader {
             thr(rows * columns <= 0, "Wrong rows (" + rows + ") or columns (" + columns + ") size");
 
             List<SimpleEntry<Vector, Integer>> list = readIDX(imageInput, labelInput, rows * columns, imagesCount);
-            return new IDXDataset(list, 10);
+            return new IDXDataset(list);
         }
     }
 }
