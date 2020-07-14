@@ -25,8 +25,6 @@ public class IDXDataset extends Dataset {
     }
 
     private Vector vectorWithOneAtPosition(Integer value) {
-        thr(value <= 0);
-
         float[] vectorValue = new float[outputVectorLength];
         vectorValue[value] = 1.0f;
         return new Vector(vectorValue);

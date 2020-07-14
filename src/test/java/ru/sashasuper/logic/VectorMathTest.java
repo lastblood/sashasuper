@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static ru.sashasuper.logic.TestUtils.*;
 import static ru.sashasuper.logic.VectorMath.*;
 
+
+// todo: написать версию для тестов с bias'ами
 class VectorMathTest {
 
     @Test
@@ -18,8 +20,9 @@ class VectorMathTest {
         Vector v = new Vector(vector);
 
         float[] result = {50, 1312};
-        Vector res = multMatrixVector(m,v);
-        assertArrayEquals(res.getValues(), result);
+        Vector res = multMatrixVector(m,v, false);
+        System.out.println("res = " + res);
+        assertVectorsEquals(res, result);
     }
 
     @Test
@@ -31,9 +34,8 @@ class VectorMathTest {
         Vector v = new Vector(vector);
 
         float[] result = {-14, 0};
-        Vector res = multMatrixVector(m,v);
-        assertArrayEquals(res.getValues(), result);
-
+        Vector res = multMatrixVector(m,v, false);
+        assertVectorsEquals(res, result);
     }
 
     @Test
@@ -45,7 +47,7 @@ class VectorMathTest {
         Vector v = new Vector(vector);
 
         try {
-            Vector res = multMatrixVector(m, v);
+            Vector res = multMatrixVector(m, v, false);
             fail();
         } catch(Throwable t){
 
@@ -61,8 +63,8 @@ class VectorMathTest {
         Vector v = new Vector(vector);
 
         float[] result = {-290, -390, -210, -80};
-        Vector res = multMatrixVectorTransposed(m, v);
-        assertArrayEquals(result, res.getValues());
+        Vector res = multMatrixVectorTransposed(m, v, false);
+        assertVectorsEquals(res, result);
     }
 
     @Test
@@ -74,7 +76,7 @@ class VectorMathTest {
         Vector v = new Vector(vector);
 
         try {
-            Vector res = multMatrixVector(m, v);
+            Vector res = multMatrixVector(m, v, false);
             fail();
         } catch(Throwable t){
 
@@ -90,8 +92,8 @@ class VectorMathTest {
         Vector v2 = new Vector(secondVector);
 
         float[] result = {0, 0, 6};
-        Vector res = multElements(v1, v2);
-        assertArrayEquals(res.getValues(), result);
+        Vector res = multElements(v1, v2, false);
+        assertVectorsEquals(res, result);
     }
 
     @Test
@@ -103,7 +105,7 @@ class VectorMathTest {
         Vector v2 = new Vector(secondVector);
 
         try {
-            Vector res = multElements(v1, v2);
+            Vector res = multElements(v1, v2, false);
             fail();
         } catch (Throwable t) {
 
@@ -119,8 +121,8 @@ class VectorMathTest {
         Vector v2 = new Vector(sVector);
 
         float[] result = {-3, 10, -4};
-        Vector res = subElements(v1, v2);
-        assertArrayEquals(res.getValues(), result);
+        Vector res = subElements(v1, v2, false);
+        assertVectorsEquals(res, result);
     }
 
     @Test
@@ -132,7 +134,7 @@ class VectorMathTest {
         Vector v2 = new Vector(sVector);
 
         try {
-            Vector res = subElements(v1, v2);
+            Vector res = subElements(v1, v2, false);
             fail();
         } catch (Throwable t) {
 
@@ -149,7 +151,7 @@ class VectorMathTest {
         Vector v2 = new Vector(row);
 
         float[][] result = {{0, -5, 1}, {-0.0f, 5, -1}, {0, -15, 3}};
-        Matrix res = multVectors(v1, v2);
+        Matrix res = multVectors(v1, v2, false);
         assertArrayEquals(res.getValues(), result);
     }
 
@@ -161,7 +163,7 @@ class VectorMathTest {
         Vector v2 = new Vector(row);
 
         float[][] result = {{10,20,-30}, {20,40,-60}};
-        Matrix res = multVectors(v1, v2);
+        Matrix res = multVectors(v1, v2, false);
         assertMatricesEquals(res, new Matrix(result));
     }
 
@@ -169,10 +171,10 @@ class VectorMathTest {
     void applyToVectorTest() {
         Vector v = new Vector(3.0f, 0, -1.7f, 0.00001f, -0.0f);
         Vector res1 = applyToVector(v, new ReLU());
-        assertArrayEquals(res1.getValues(), new float[]{3.0f, 0,0, 0.00001f, 0});
+        assertVectorsEquals(res1, new Vector(new float[]{3.0f, 0,0, 0.00001f, 0}));
         Vector res2 = applyToVector(v, new ReLU(), true);
-        assertArrayEquals(res2.getValues(), new float[]{1, 0, 0, 1, 0});
-        assertArrayEquals(applyToVector(v, new ReLU(), false).getValues(), res1.getValues());
+        assertVectorsEquals(res2, new float[]{1, 0, 0, 1, 0});
+        assertVectorsEquals(applyToVector(v, new ReLU(), false), res1);
     }
 
     @Test

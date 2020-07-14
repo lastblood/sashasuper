@@ -13,7 +13,7 @@ class ActivateFunctionTest {
         float res = func.process(3);
         assertEquals(res, result);
 
-        result = 0.18242551f;
+        result = 0.18242553f;
         res = func.process((float) -1.5);
         assertEquals(res, result);
 
