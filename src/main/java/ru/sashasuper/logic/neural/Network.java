@@ -1,13 +1,13 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.logic.neural;
 
+import ru.sashasuper.io.*;
 import ru.sashasuper.logic.functions.ActivateFunction;
-import ru.sashasuper.logic.functions.ReLU;
 import ru.sashasuper.utils.NanDefender;
 
 import java.io.Serializable;
 import java.util.*;
 
-import static ru.sashasuper.logic.VectorMath.*;
+import static ru.sashasuper.logic.neural.VectorMath.*;
 import static ru.sashasuper.utils.Assertions.thr;
 
 public class Network implements Serializable, Cloneable {

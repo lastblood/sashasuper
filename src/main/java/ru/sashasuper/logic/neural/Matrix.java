@@ -1,4 +1,4 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.logic.neural;
 
 import java.io.Serializable;
 import java.util.Arrays;

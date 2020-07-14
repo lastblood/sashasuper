@@ -2,6 +2,7 @@ package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
+import ru.sashasuper.logic.neural.Matrix;
 
 import java.util.Arrays;
 

@@ -1,6 +1,6 @@
 package ru.sashasuper.logic.generators;
 
-import ru.sashasuper.logic.Matrix;
+import ru.sashasuper.logic.neural.Matrix;
 
 import java.util.Random;
 import java.util.function.BiFunction;

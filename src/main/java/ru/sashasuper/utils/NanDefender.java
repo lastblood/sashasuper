@@ -1,8 +1,6 @@
 package ru.sashasuper.utils;
 
-import ru.sashasuper.logic.Matrix;
-import ru.sashasuper.logic.Network;
-import ru.sashasuper.logic.Vector;
+import ru.sashasuper.logic.neural.*;
 
 import java.util.Arrays;
 

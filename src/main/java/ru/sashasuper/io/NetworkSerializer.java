@@ -1,5 +1,6 @@
 package ru.sashasuper.io;
-import ru.sashasuper.logic.Network;
+
+import ru.sashasuper.logic.neural.Network;
 
 import java.io.*;
 

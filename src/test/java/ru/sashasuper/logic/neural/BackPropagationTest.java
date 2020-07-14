@@ -1,7 +1,6 @@
 package ru.sashasuper.logic.neural;
 
 import org.junit.jupiter.api.Test;
-import ru.sashasuper.logic.*;
 import ru.sashasuper.logic.functions.*;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 

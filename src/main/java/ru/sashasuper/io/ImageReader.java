@@ -1,12 +1,10 @@
 package ru.sashasuper.io;
 
-import ru.sashasuper.logic.Vector;
+import ru.sashasuper.logic.neural.Vector;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 public class ImageReader {
     private final String imageFileName;

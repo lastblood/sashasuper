@@ -1,15 +1,9 @@
 package ru.sashasuper.io;
 
-import ru.sashasuper.logic.Dataset;
-import ru.sashasuper.logic.IDXDataset;
-import ru.sashasuper.logic.Vector;
+import ru.sashasuper.logic.neural.Vector;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import static java.util.AbstractMap.SimpleEntry;
@@ -52,8 +46,8 @@ public class IDXReader {
         }
         float[] array = new float[length];
 
+        // todo: куда добавить filters 'n downscale?
         for (int pixel = 0; pixel < length; pixel++)
-//            array[pixel] = (buf[pixel] / 32) / 8f; // todo: переделать
              array[pixel] = Byte.toUnsignedInt(buf[pixel]) / 255f;
 
         return new Vector(array);

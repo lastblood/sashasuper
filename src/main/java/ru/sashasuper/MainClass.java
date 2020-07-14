@@ -1,20 +1,18 @@
 package ru.sashasuper;
 
-
+import ru.sashasuper.io.Dataset;
 import ru.sashasuper.io.IDXReader;
-import ru.sashasuper.logic.*;
-import ru.sashasuper.logic.Vector;
+import ru.sashasuper.io.MomentumStat;
 import ru.sashasuper.logic.functions.*;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
-import ru.sashasuper.utils.NanDefender;
+import ru.sashasuper.logic.neural.Network;
+import ru.sashasuper.logic.neural.Vector;
 
 import java.io.*;
 import java.util.*;
-import java.util.AbstractMap.*;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -66,11 +64,6 @@ public class MainClass {
         float mult = 0.98f;
 
         List<SimpleEntry<Vector, Vector>> trainAll = train.getAll();
-
-//        for (float value : trainAll.get(0).getKey().getValues()) {
-//            if(value != 0.0f)
-//                System.out.print(value + " ");
-//        }
 
         while(rate > 0.004f) {
             nn.setLearningRate(rate);
@@ -154,8 +147,6 @@ public class MainClass {
                 Thread.sleep(100);
             }
 
-//            if(nnStat == null || bestStat.betterThan(nnStat)) {
-
             if(nnStat == null || bestStat.betterThan(nnStat)) {
                 nn = bestNetwork;
                 nnStat = bestStat;
@@ -172,7 +163,7 @@ public class MainClass {
         service.shutdown();
     }
 
-    static Random r = new Random();
+    private static Random r = new Random();
 
     public static SimpleEntry<MomentumStat, Network> trainNetworkRandom(
             Network nn, List<SimpleEntry<Vector, Vector>> dataSetList, Dataset test, int count) {
@@ -188,7 +179,6 @@ public class MainClass {
     public static SimpleEntry<MomentumStat, Network> trainNetwork(
             Network nn, List<SimpleEntry<Vector, Vector>> dataSetList, Dataset test, int iters) {
         for (int i = 0; i < iters; i++) {
-//            System.out.println(i);
             for (SimpleEntry<Vector, Vector> entry : dataSetList) {
                 nn.backPropagation(entry.getKey(), entry.getValue());
             }

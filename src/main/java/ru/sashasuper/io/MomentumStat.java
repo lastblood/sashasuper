@@ -1,6 +1,8 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.io;
 
-import java.util.AbstractMap;
+import ru.sashasuper.logic.neural.Vector;
+
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 public class MomentumStat {
@@ -18,7 +20,7 @@ public class MomentumStat {
     public double maxMetric;
     public double sumMetric;
 
-    public List<AbstractMap.SimpleEntry<Vector, Vector>> bad;
+    public List<SimpleEntry<Vector, Vector>> bad;
 
     @Override
     public String toString() {

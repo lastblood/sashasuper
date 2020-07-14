@@ -1,5 +1,7 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.io;
 
+
+import ru.sashasuper.logic.neural.Vector;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;

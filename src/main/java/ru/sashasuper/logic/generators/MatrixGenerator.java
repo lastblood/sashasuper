@@ -1,6 +1,6 @@
 package ru.sashasuper.logic.generators;
 
-import ru.sashasuper.logic.Matrix;
+import ru.sashasuper.logic.neural.Matrix;
 
 public abstract class MatrixGenerator {
     abstract public Matrix generateMatrix(int rows, int columns);

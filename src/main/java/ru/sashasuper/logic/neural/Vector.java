@@ -1,10 +1,8 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.logic.neural;
 
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static ru.sashasuper.utils.Assertions.thr;
 

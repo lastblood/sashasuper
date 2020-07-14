@@ -1,4 +1,4 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.io;
 
 import java.io.IOException;
 

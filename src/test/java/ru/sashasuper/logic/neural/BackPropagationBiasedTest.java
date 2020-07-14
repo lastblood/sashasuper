@@ -1,16 +1,10 @@
 package ru.sashasuper.logic.neural;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.sashasuper.logic.Matrix;
-import ru.sashasuper.logic.Network;
-import ru.sashasuper.logic.Vector;
 import ru.sashasuper.logic.functions.Identity;
 import ru.sashasuper.logic.functions.ReLU;
 
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

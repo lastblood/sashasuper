@@ -1,5 +1,8 @@
 package ru.sashasuper.logic;
 
+import ru.sashasuper.logic.neural.Matrix;
+import ru.sashasuper.logic.neural.Vector;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestUtils {

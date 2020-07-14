@@ -2,10 +2,12 @@ package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.functions.ReLU;
+import ru.sashasuper.logic.neural.Matrix;
+import ru.sashasuper.logic.neural.Vector;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.sashasuper.logic.TestUtils.*;
-import static ru.sashasuper.logic.VectorMath.*;
+import static ru.sashasuper.logic.neural.VectorMath.*;
 
 
 // todo: написать версию для тестов с bias'ами

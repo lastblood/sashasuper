@@ -1,9 +1,7 @@
-package ru.sashasuper.logic;
-
+package ru.sashasuper.logic.neural;
 
 import ru.sashasuper.logic.functions.ActivateFunction;
 
-import java.util.Arrays;
 import java.util.function.BiFunction;
 
 import static ru.sashasuper.utils.Assertions.thr;
