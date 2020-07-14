@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.Matrix;
 import ru.sashasuper.logic.Network;
-import ru.sashasuper.logic.NetworkF;
 import ru.sashasuper.logic.Vector;
 import ru.sashasuper.logic.functions.Identity;
 import ru.sashasuper.logic.functions.ReLU;
@@ -44,14 +43,6 @@ public class BackPropagationBiasedTest {
     void halfMultiplierLinear() {
         Network nn = new Network(
                     new Matrix[]{new Matrix(new float[][]{{0.6f, 0.0f}})},
-                new Identity(), 0.07f, true);
-        halfMultiplier(nn, 5000);
-    }
-
-    @Test
-    void halfMultiplierLinearF() {
-        Network nn = new NetworkF(
-                new Matrix[]{new Matrix(new float[][]{{0.6f, 0.0f}})},
                 new Identity(), 0.07f, true);
         halfMultiplier(nn, 5000);
     }
