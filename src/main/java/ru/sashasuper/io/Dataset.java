@@ -9,19 +9,18 @@ import java.util.*;
 // Допытливый зритель, конечно, спросит: "Ну и нафига он нужен абстрактным"?
 // Отвечаю: для возможной ленивой инициализации
 public abstract class Dataset {
-    public abstract List<SimpleEntry<ru.sashasuper.logic.Vector, ru.sashasuper.logic.Vector>> getAll();
+    public abstract List<SimpleEntry<Vector, Vector>> getAll();
 
     // Возвращает count подсписков. Точный результат зависит от реализации,
     // единственный контракт, что при любом count < getAll.size, они должны быть не пустыми
-    public List<List<SimpleEntry<ru.sashasuper.logic.Vector, ru.sashasuper.logic.Vector>>> getBatches(int count) {
-        List<List<SimpleEntry<ru.sashasuper.logic.Vector, ru.sashasuper.logic.Vector>>> list = new ArrayList<>();
-        List<SimpleEntry<ru.sashasuper.logic.Vector, Vector>> all = getAll();
+    public List<Dataset> getBatches(int count) {
+        List<SimpleEntry<Vector, Vector>> all = getAll();
+        List<Dataset> result = new ArrayList<>(count);
 
         int by = all.size() / count;
         for (int i = 0; i < count; i++)
-            list.add(all.subList(by * i, by * (i+1)));
+            result.add(new SimpleDataset(all.subList(by * i, by * (i+1))));
 
-        return Collections.unmodifiableList(list);
-//        return list;
+        return result;
     }
 }
