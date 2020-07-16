@@ -77,6 +77,14 @@ public class Network implements Serializable, Cloneable {
         this.learningRate = learningRate;
     }
 
+    public int getLayerCount() {
+        return layerCount;
+    }
+
+    public boolean isWithBias() {
+        return withBias;
+    }
+
     // Всегда воспринимает, как non-biased input
     public Vector process(float ... values) {
         return process(new Vector(values));
@@ -206,7 +214,7 @@ public class Network implements Serializable, Cloneable {
         List<AbstractMap.SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
         Collections.shuffle(dataList);
 
-        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(dataList.size() / 10);
+//        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(dataList.size() / 10);
 
         for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataList) {
             Vector resultVector = process(entry.getKey());
@@ -221,8 +229,8 @@ public class Network implements Serializable, Cloneable {
             else
                 wrong++;
 
-            if(ind1 != ind2 || mse > 0.7f)
-                bad.add(entry);
+//            if(ind1 != ind2 || mse > 0.7f)
+//                bad.add(entry);
 
             min = Float.min(mse, min);
             max = Float.max(mse, max);
@@ -231,8 +239,8 @@ public class Network implements Serializable, Cloneable {
         }
 
         MomentumStat momentumStat = new MomentumStat(right, wrong, min, max, resultError);
-        Collections.shuffle(bad);
-        momentumStat.bad = bad;
+//        Collections.shuffle(bad);
+//        momentumStat.bad = bad;
         return momentumStat;
     }
 
