@@ -1,20 +1,18 @@
 package ru.sashasuper;
 
 
+import ru.sashasuper.io.Dataset;
 import ru.sashasuper.io.IDXReader;
 import ru.sashasuper.logic.*;
 import ru.sashasuper.logic.Vector;
 import ru.sashasuper.logic.functions.*;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
-import ru.sashasuper.utils.NanDefender;
 
 import java.io.*;
 import java.util.*;
 import java.util.AbstractMap.*;
 import java.util.concurrent.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.IntStream;
+import java.util.function.*;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -56,14 +54,14 @@ public class MainClass {
 
         System.out.println("Read");
 
-        Network nn = new Network(new RandomMatrixGenerator().generateMatrices(true, -0.5f, 0.5f, 784, 90, 10),
+        Network nn = new Network(new RandomMatrixGenerator().generateMatrices(true, -0.5f, 0.5f, 784, 300, 10),
                 new Logistic(), 1f, true);
 
         MomentumStat nnStat = nn.test(train);
         System.out.println(nnStat);
 
-        float rate = 0.015f;
-        float mult = 0.98f;
+        float rate = 0.005f;
+        float mult = 0.99f;
 
         List<SimpleEntry<Vector, Vector>> trainAll = train.getAll();
 
@@ -72,7 +70,7 @@ public class MainClass {
 //                System.out.print(value + " ");
 //        }
 
-        while(rate > 0.004f) {
+        while(rate > 0.001f) {
             nn.setLearningRate(rate);
             long time = System.currentTimeMillis();
             for (SimpleEntry<Vector, Vector> entry : trainAll)
@@ -82,9 +80,11 @@ public class MainClass {
 
             MomentumStat statBefore = nn.test(train);
 
-            System.out.println(rate);
-            System.out.println("BEFORE " + time1 + " " + statBefore);
-            System.out.println("TEST " + nn.test(test));
+            System.out.println(rate + " " + time1);
+            Function<MomentumStat, Double> perc = stat -> (double) stat.countRight / (stat.countRight + stat.countWrong);
+            System.out.print((double) perc.apply(statBefore) + " " + statBefore);
+            MomentumStat statTest = nn.test(test);
+            System.out.print("TEST " + (double) perc.apply(statTest) + " " + statTest);
 
 //            if(statBefore.bad.size() * 4 < trainAll.size()) {
 //                nn.setLearningRate(rate / 4);

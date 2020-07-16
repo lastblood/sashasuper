@@ -1,4 +1,6 @@
-package ru.sashasuper.logic;
+package ru.sashasuper.io;
+
+import ru.sashasuper.logic.Vector;
 
 import java.util.ArrayList;
 import java.util.List;

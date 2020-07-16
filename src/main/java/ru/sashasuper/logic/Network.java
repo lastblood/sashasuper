@@ -1,7 +1,7 @@
 package ru.sashasuper.logic;
 
+import ru.sashasuper.io.Dataset;
 import ru.sashasuper.logic.functions.ActivateFunction;
-import ru.sashasuper.logic.functions.ReLU;
 import ru.sashasuper.utils.NanDefender;
 
 import java.io.Serializable;

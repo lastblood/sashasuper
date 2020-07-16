@@ -1,7 +1,5 @@
 package ru.sashasuper.io;
 
-import ru.sashasuper.logic.Dataset;
-import ru.sashasuper.logic.IDXDataset;
 import ru.sashasuper.logic.Vector;
 
 import java.io.BufferedInputStream;
