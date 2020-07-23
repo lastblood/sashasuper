@@ -2,8 +2,8 @@ package ru.sashasuper.logic;
 
 
 import ru.sashasuper.logic.functions.ActivateFunction;
+import ru.sashasuper.logic.functions.ElementFunction;
 
-import java.util.Arrays;
 import java.util.function.BiFunction;
 
 import static ru.sashasuper.utils.Assertions.thr;

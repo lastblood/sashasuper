@@ -106,45 +106,38 @@ public class Network implements Serializable, Cloneable {
         return currentVector;
     }
 
-    public Vector[] processRemember(Vector input) {
-        thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
-        thr(NanDefender.inVector(input));
-
-        Vector[] memories = new Vector[getHiddenLayerCount() + 2];
-        memories[0] = input;
-
-        Vector currentVector = input;
-        for (int i = 0; i < getWeightMatrices().length; i++) {
-            // todo: оптимизировать матричные операции для создания вектора сразу с bias
-            currentVector = multMatrixVector(getWeightMatrices()[i], currentVector, withBias);
-            currentVector = applyToVector(currentVector, getActivateFunction());
-            memories[i + 1] = currentVector;
-        }
-
-        return memories;
-    }
-
     // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
     public void backPropagation(Vector input, Vector expectedOutput) {
-        // Прогнать прямое распространение и запомнить результаты
-        Vector[] vectors = processRemember(input);
-        thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
+        thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
 
-        thr(vectors.length != getHiddenLayerCount() + 2);
-//        System.out.println("vectors = " + Arrays.toString(vectors));
+        Vector[] activations = new Vector[getHiddenLayerCount() + 2];
+        activations[0] = input;
 
-        // Найти ошибку для выходного вектора
-        Vector error_layer = subElements(vectors[getHiddenLayerCount() + 1], expectedOutput, withBias);
-        thr(NanDefender.inVector(error_layer));
+        Vector[] z_vectors = new Vector[getHiddenLayerCount() + 1];
 
-        thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
-
-        // Прогнать через backPropagation все слои
-        for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
-            thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
-            error_layer = backPropagationIter(vectors, error_layer, index);
-            thr(NanDefender.inVector(error_layer));
+        for (int i = 0; i < getWeightMatrices().length; i++) {
+            z_vectors[i] = multMatrixVector(getWeightMatrices()[i], activations[i], withBias);
+            activations[i + 1] = applyToVector(z_vectors[i], getActivateFunction());
         }
+
+//        thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
+            Vector lastLayer = activations[getHiddenLayerCount() + 1];
+
+            // Найти ошибку для выходного вектора
+    //        Vector errorLayer = subElements(vectors[getHiddenLayerCount() + 1], expectedOutput, withBias);
+            Vector costLayer = subElements(lastLayer, expectedOutput, withBias);
+            Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
+
+            Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+            thr(NanDefender.inVector(errorLayer));
+//            thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
+
+            // Прогнать через backPropagation все слои
+            for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
+                thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
+                errorLayer = backPropagationIter(activations, errorLayer, index);
+                thr(NanDefender.inVector(errorLayer));
+            }
     }
 
     // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
@@ -152,44 +145,36 @@ public class Network implements Serializable, Cloneable {
     
     // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
     // currentIndex указывает на индекс текущей меняемой матрицы
-    private Vector backPropagationIter(Vector[] networkState, Vector error_layer, int currentIndex) {
-//        System.out.println("backPropagationIter():\nerror_layer = " + error_layer);
+    private Vector backPropagationIter(Vector[] networkState, Vector nextError, int currentIndex) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
 
         Vector currentLayer = networkState[currentIndex + 1];
         Vector lastLayer = networkState[currentIndex];
 
         Vector gradient_layer = applyToVector(currentLayer, activateFunction, true);
-        // Очевидно, для identity gradient_layer всегда будет равен единице
-        thr(NanDefender.inVector(gradient_layer));
+//        thr(NanDefender.inVector(gradient_layer));
 
         // Вектор дельты
-        Vector delta_layer = multElements(error_layer, gradient_layer, withBias);
-//        System.out.println("delta_layer = " + delta_layer);
-        thr(NanDefender.inVector(delta_layer));
+        Vector delta_layer = multElements(nextError, gradient_layer, withBias);
+//        thr(NanDefender.inVector(delta_layer));
 
-        //todo: можно реализовать смешанную операцию: умножение двух векторов
-
-//БЫЛО
-//        Matrix temp = multVectors(delta_layer, lastLayer, withBias);
         Matrix temp = multVectors(lastLayer, delta_layer, withBias);
-//        System.out.println("temp = " + temp);
 
         // Корректировочная матрица для текущей матрицы весов в Network
         Matrix subMatrix = multMatrixByT(temp, getLearningRate());
-//        System.out.println("subMatrix = " + subMatrix);
+//        thr(NanDefender.inMatrix(subMatrix));
 
         Matrix current = getWeightMatrices()[currentIndex];
-//        System.out.println("current = " + current);
+//        thr(NanDefender.inMatrix(current));
         thr(subMatrix.getColumns() != current.getColumns() || subMatrix.getRows() != current.getRows());
 
         // Корректируем текущую матрицу весов
         getWeightMatrices()[currentIndex] = subMatrices(current, subMatrix);
 
-        // Отправляем ошибку на уровень назад
-        Vector result = multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
-        thr(NanDefender.inVector(result));
-        return result;
+        // Возвращаем ошибку, которую надо будет отправить на уровень назад
+        Vector currentError = multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
+        thr(NanDefender.inVector(currentError));
+        return currentError;
     }
 
     private static int getMaxIndex(Vector v) {
