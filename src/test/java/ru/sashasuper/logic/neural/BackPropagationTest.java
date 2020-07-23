@@ -119,8 +119,8 @@ public class BackPropagationTest {
     void rainTestLogistic() {
         Network nn = new Network(new RandomMatrixGenerator(new Random(0), -0.9f, 0.9f)
                     .generateMatrices(false, 3, 3, 1),
-                new Logistic(), 0.1f, false);
-        hard(nn, 1000);
+                new Logistic(), 0.2f, false);
+        hard(nn, 1600);
     }
 
     @Test
