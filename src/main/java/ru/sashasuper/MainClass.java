@@ -33,57 +33,86 @@ public class MainClass {
                 "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
                 true, true).read();
 
-        Network nn = new Network(new RandomMatrixGenerator().generateMatrices(true, -0.5f, 0.5f, 784, 300, 10),
-                new Logistic(), 1f, true);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(143))
+                .generateMatrices(true, -0.01f, 0.01f, 784, 100, 10), new Logistic(), 1f);
 
-        MomentumStat nnStat = nn.test(train);
-        System.out.println(nnStat);
+        System.out.println("Generate");
+//        MomentumStat nnStat = nn.test(train); ss
+//        MomentumStat nnStat = nn.test(train);
+//        System.out.println(nn.test(train));
+        System.out.println(nn.test(test));
 
-        ExecutorService service = Executors.newFixedThreadPool(4);
-        int BATCHES = 4;
-        int ITER_BY_EPOCH = 4;
+        ExecutorService service = Executors.newFixedThreadPool(2);
 
-        float learning_rate = 0.005f;
-        float lr_multiplier = 0.97f;
-        float min_learning_rate = 0.001f;
+        float learning_rate = 0.2f;
+        float lr_multiplier = 0.8f;
+        float min_learning_rate = 0.0001f;
 
-        List<SimpleEntry<Vector, Vector>> trainAll = train.getAll();
+        MomentumStat lastStat = null;
 
-        while(learning_rate > min_learning_rate) {
+        int fails = 0;
+
+        while(learning_rate > min_learning_rate && fails < 5) {
             nn.setLearningRate(learning_rate);
             long time = System.currentTimeMillis();
-            for (SimpleEntry<Vector, Vector> entry : trainAll)
-                nn.backPropagation(entry.getKey(), entry.getValue());
-            learning_rate *= lr_multiplier;
+            try {
+//                SimpleEntry<MomentumStat, Network> entry =
+//                        trainNetworkBestLR(nn, train, test, 2, service);
+            nn = trainNetwork(nn, train);
+//            nn = trainNetworkAverage(nn, train, test, 2, service);
 
-            MomentumStat statBefore = nn.test(train);
+//                nn = entry.getValue();
+//                System.out.printf("(%f) REAL: %f; time = %d\n",
+//                        learning_rate, nn.getLearningRate(), (System.currentTimeMillis() - time));
 
-            System.out.println(learning_rate + " " + (System.currentTimeMillis() - time));
-            System.out.print((double) percent.apply(statBefore) + " " + statBefore);
-            MomentumStat statTest = nn.test(test);
-            System.out.print("TEST " + (double) percent.apply(statTest) + " " + statTest);
+//                MomentumStat statBefore = nn.test(train);
+//                System.out.println(percent.apply(statBefore) + " " + statBefore);
 
-            // Отдельно пробег по худшим
+                time = System.currentTimeMillis() - time;
+//                MomentumStat statTest = entry.getKey();
+                MomentumStat statTest = nn.test(test);
+                System.out.printf("%f %dмс\n", learning_rate, time);
+                System.out.println(percent.apply(statTest)*100 + "% " + statTest);
+
+
+                if(lastStat != null && learning_rate > 0.005) {
+                    int diff = statTest.countRight - lastStat.countRight;
+                    if(diff < -20)
+                        learning_rate *= 0.1;
+                    else if(diff < 10)
+                        learning_rate *= 0.5;
+                    else
+                        learning_rate *= 0.9;
+                } else
+                    learning_rate *= 0.9;
+
+                lastStat = statTest;
+//                System.out.println(Arrays.toString(nn.getWeightMatrices()));
+//                learning_rate *= lr_multiplier;
+            } catch (Exception e) {
+                e.printStackTrace();
+                fails++;
+            }
         }
 
+        if(fails < 4)
         try(ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(
                 "backup.nn")))) {
             oos.writeObject(nn);
             System.out.println("Wrote");
         }
-
         service.shutdown();
     }
-
 
     public static Network trainNetwork(Network nn, Dataset train) {
         for (SimpleEntry<Vector, Vector> entry : train.getAll())
             nn.backPropagation(entry.getKey(), entry.getValue());
+
         return nn;
     }
 
     private static Network trainNetworkAverage(
-            Network nn, Dataset train, int BATCHES, float rate, ExecutorService service)
+            Network nn, Dataset train, Dataset test, int BATCHES, ExecutorService service)
                     throws CloneNotSupportedException, ExecutionException, InterruptedException {
 
         Future[] resultArray = new Future[BATCHES];
@@ -93,11 +122,14 @@ public class MainClass {
         for (int i = 0; i < BATCHES; i++) {
             Network currentNetwork = (Network) nn.clone();
             Dataset currentDataset = batchesList.get(i);
-
-            currentNetwork.setLearningRate(rate);
             nets[i] = currentNetwork;
 
-            resultArray[i] = service.submit(() -> trainNetwork(currentNetwork, currentDataset));
+            resultArray[i] = service.submit(() -> {
+                Network network = trainNetwork(currentNetwork, currentDataset);
+                MomentumStat stat = network.test(test);
+                System.out.println(percent.apply(stat) + " " + stat);
+                return network;
+            });
         }
 
         for (int i = 0; i < BATCHES; i++)
@@ -118,8 +150,8 @@ public class MainClass {
     }
 
     private static Matrix averageFrom(Matrix ... matrices) {
-        thr(Arrays.stream(matrices).allMatch(m ->
-                matrices[0].getColumns() == m.getColumns() && matrices[0].getRows() == m.getRows()));
+        thr(Arrays.stream(matrices).anyMatch(m ->
+                matrices[0].getColumns() != m.getColumns() || matrices[0].getRows() != m.getRows()));
         int rows = matrices[0].getRows();
         int columns = matrices[0].getColumns();
         float[][] result = new float[rows][columns];
