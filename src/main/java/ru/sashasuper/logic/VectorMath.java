@@ -109,19 +109,27 @@ public class VectorMath {
         return new Matrix(result);
     }
 
-    public static Vector applyToVector(Vector vector, ActivateFunction function) {
+    public static Vector applyToVector(Vector vector, ElementFunction function) {
         return applyToVector(vector, function, false);
     }
 
     //Поэлементное применение функции активации (самой функции или производной)
     // todo: зачем здесь искусственный immutable? потанцевальная оптимизация
-    public static Vector applyToVector(Vector vector, ActivateFunction function, boolean derivative) {
+    public static Vector applyToVector(Vector vector, ElementFunction function, boolean derivative) {
         int len = vector.getNonBiasedLength();
         Vector result = new Vector(new float[len]);
 
-        for (int i = 0; i < len; i++) {
-            float x = vector.getValues()[i];
-            result.getValues()[i] = derivative ? function.derivative(x) : function.process(x);
+        if(derivative) {
+            ActivateFunction f = (ActivateFunction) function;
+            for (int i = 0; i < len; i++) {
+                float x = vector.getValues()[i];
+                result.getValues()[i] = f.derivative(x);
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                float x = vector.getValues()[i];
+                result.getValues()[i] = function.process(x);
+            }
         }
 
         return result;

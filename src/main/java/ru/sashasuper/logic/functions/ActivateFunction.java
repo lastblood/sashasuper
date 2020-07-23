@@ -3,6 +3,6 @@ package ru.sashasuper.logic.functions;
 
 import java.io.Serializable;
 
-public abstract class ActivateFunction extends ElementFunction implements Serializable {
-    public abstract float derivative(float value);
+public interface ActivateFunction extends ElementFunction, Serializable {
+    float derivative(float value);
 }

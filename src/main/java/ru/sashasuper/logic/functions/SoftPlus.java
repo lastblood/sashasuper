@@ -1,14 +1,16 @@
 package ru.sashasuper.logic.functions;
 
-public class SoftPlus extends ActivateFunction {
+public class SoftPlus implements ActivateFunction {
 
     @Override
     public float derivative(float value) {
-        return (float) (1 / (1 + Math.pow(Math.E, -value)));
+        if(value > 10) return 1;
+        return (float) (1 / (1 + Math.exp(-value)));
     }
 
     @Override
     public float process(float value) {
-        return (float) Math.log(1 + Math.pow(Math.E, value));
+        if(value > 10) return value;
+        return (float) Math.log(1 + Math.exp(value));
     }
 }
