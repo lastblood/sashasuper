@@ -14,7 +14,8 @@ public abstract class Dataset {
     // Возвращает count подсписков. Точный результат зависит от реализации,
     // единственный контракт, что при любом count < getAll.size, они должны быть не пустыми
     public List<Dataset> getBatches(int count) {
-        List<SimpleEntry<Vector, Vector>> all = getAll();
+        List<SimpleEntry<Vector, Vector>> all = new ArrayList<>(getAll());
+        Collections.shuffle(all);
         List<Dataset> result = new ArrayList<>(count);
 
         int by = all.size() / count;

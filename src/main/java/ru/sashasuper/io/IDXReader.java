@@ -51,8 +51,7 @@ public class IDXReader {
         float[] array = new float[length];
 
         for (int pixel = 0; pixel < length; pixel++)
-//            array[pixel] = (buf[pixel] / 32) / 8f; // todo: переделать
-             array[pixel] = Byte.toUnsignedInt(buf[pixel]) / 255f;
+             array[pixel] = Byte.toUnsignedInt(buf[pixel]) / 255f * 0.99f;
 
         return new Vector(array);
     }
