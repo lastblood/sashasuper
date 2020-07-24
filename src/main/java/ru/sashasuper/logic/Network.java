@@ -121,14 +121,12 @@ public class Network implements Serializable, Cloneable {
         }
 
 //        thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
-        Vector lastLayer = activations[getHiddenLayerCount() + 1];
 
             // Найти ошибку для выходного вектора
-//        Vector errorLayer = subElements(vectors[getHiddenLayerCount() + 1], expectedOutput, withBias);
-        Vector costLayer = subElements(lastLayer, expectedOutput, withBias);
+        Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
         Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
-
         Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+
         thr(NanDefender.inVector(errorLayer));
 //        thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
