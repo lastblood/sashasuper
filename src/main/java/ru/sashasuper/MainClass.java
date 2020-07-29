@@ -33,8 +33,8 @@ public class MainClass {
                 "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
                 true, true).read();
 
-        Network nn = new Network(new RandomMatrixGenerator(new Random(151))
-                .generateMatrices(true, -0.1f, 0.1f, 784, 50, 10), new Logistic(), 1f);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(155))
+                .generateMatrices(true, -0.05f, 0.05f, 784, 150, 10), new Logistic(), 1f);
 
         System.out.println("Generate");
         System.out.println(nn.test(test));
@@ -43,7 +43,7 @@ public class MainClass {
 
         float learning_rate = 0.2f;
         float lr_multiplier = 0.95f;
-        float min_learning_rate = 0.02f;
+        float min_learning_rate = 0.001f;
 
         MomentumStat lastStat = null;
 
@@ -61,17 +61,7 @@ public class MainClass {
             System.out.printf("%2.2f%% LR: %1.4f %dмс\n", percent.apply(statTest)*100, learning_rate, time);
             System.out.printf("%s\n", statTest);
 
-
-            if(lastStat != null && learning_rate > 0.005) {
-                int diff = statTest.countRight - lastStat.countRight;
-                if(diff < -20)
-                    learning_rate *= 0.1;
-                else if(diff < -5)
-                    learning_rate *= 0.5;
-                else
-                    learning_rate *= lr_multiplier;
-            } else
-                learning_rate *= lr_multiplier;
+            learning_rate *= lr_multiplier;
 
             lastStat = statTest;
         }

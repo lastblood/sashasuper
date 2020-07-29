@@ -124,18 +124,17 @@ public class Network implements Serializable, Cloneable {
 
             // Найти ошибку для выходного вектора
         Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
-        Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
-        Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+        //Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
+        //Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+        Vector errorLayer = costLayer; // Cross-entropy loss trigger
 
         thr(NanDefender.inVector(errorLayer));
 //        thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
-        Matrix[] subMatrices = new Matrix[getWeightMatrices().length];
-
             // Прогнать через backPropagation все слои
         for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
             thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
-            errorLayer = backPropagationIter(activations[index], z_vectors[index], errorLayer, subMatrices, index);
+            errorLayer = backPropagationIter(activations[index], z_vectors[index], errorLayer, index);
             thr(NanDefender.inVector(errorLayer));
         }
     }
@@ -146,7 +145,7 @@ public class Network implements Serializable, Cloneable {
     // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
     // currentIndex указывает на индекс текущей меняемой матрицы
     private Vector backPropagationIter(Vector lastLayer, Vector currentLayer,
-                                       Vector nextError, Matrix[] subMatrices, int currentIndex) {
+                                       Vector nextError, int currentIndex) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
 
         Vector gradient_layer = applyToVector(currentLayer, activateFunction, true);
@@ -157,18 +156,19 @@ public class Network implements Serializable, Cloneable {
 //        thr(NanDefender.inVector(delta_layer));
 
         // Корректировочная матрица для текущей матрицы весов в Network
-        subMatrices[currentIndex] = multMatrixByT(
-                multVectors(lastLayer, delta_layer, withBias), getLearningRate());
+        Matrix currentMatrix = multMatrixByT(multVectors(lastLayer, delta_layer, withBias), getLearningRate());
 //        thr(NanDefender.inMatrix(subMatrix));
 
+        final float regRate = 0.5f; // 0.45
         Matrix current = getWeightMatrices()[currentIndex];
+        for (int y = 0; y < current.getRows(); y++)
+            for (int x = 0; x < current.getColumns() - 1; x++)
+                current.getValues()[y][x] *= 1 - learningRate*regRate/60000;
 //        thr(NanDefender.inMatrix(current));
-        thr(subMatrices[currentIndex].getColumns() != current.getColumns() ||
-                subMatrices[currentIndex].getRows() != current.getRows());
 
         // Корректируем текущую матрицу весов
         // todo: убрать отсель
-        getWeightMatrices()[currentIndex] = subMatrices(current, subMatrices[currentIndex]);
+        getWeightMatrices()[currentIndex] = subMatrices(current, currentMatrix);
 
         // Возвращаем ошибку, которую надо будет отправить на уровень назад
         return multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
