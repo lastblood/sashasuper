@@ -25,13 +25,13 @@ public class LambdaAllMatrixGenerator extends MatrixGenerator {
     }
 
     @Override
-    public Matrix[] generateMatrices(boolean biased, int ... sizes) {
+    public Matrix[] generateMatrices(int ... sizes) {
         // Из-за стримов происходит boxing в Integer, еще и SimpleEntry создаются,
         // так что оптимизация головного мозга не даст мне теперь уснуть
 
         thr(sizes.length < 2, "Sizes should contains at least 2 values: input and output vectors size");
         return IntStream.range(0, sizes.length-1)
-                .mapToObj(x -> new AbstractMap.SimpleEntry<>(sizes[x+1], sizes[x] + (biased ? 1 : 0)))
+                .mapToObj(x -> new AbstractMap.SimpleEntry<>(sizes[x+1], sizes[x] + 1))
                 .map(y -> getInternalGenerator().apply(y.getKey(), y.getValue()))
                 .toArray(Matrix[]::new);
     }

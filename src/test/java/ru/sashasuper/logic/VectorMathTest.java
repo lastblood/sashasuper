@@ -171,9 +171,9 @@ class VectorMathTest {
     void applyToVectorTest() {
         Vector v = new Vector(3.0f, 0, -1.7f, 0.00001f, -0.0f);
         Vector res1 = applyToVector(v, new ReLU());
-        assertVectorsEquals(res1, new Vector(new float[]{3.0f, 0,0, 0.00001f, 0}));
+        assertVectorsEquals(res1, new Vector(3.0f, 0,0, 0.00001f, 0));
         Vector res2 = applyToVector(v, new ReLU(), true);
-        assertVectorsEquals(res2, new float[]{1, 0, 0, 1, 0});
+        assertVectorsEquals(res2, 1, 0, 0, 1, 0);
         assertVectorsEquals(applyToVector(v, new ReLU(), false), res1);
     }
 

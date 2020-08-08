@@ -10,11 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RandomMatrixGeneratorTest {
 
-    private void assertIn(RandomMatrixGenerator gen, float min, float max) {
-        Matrix matrix = gen.generateMatrix(600,90, min, max);
+    void assertInRange(Matrix matrix, float min, float max) {
         float[][] values =  matrix.getValues();
-        for (float[] value : values) {
-            for (float v : value) {
+        for (int i = 0; i < values.length - 1; i++) {
+            for (float v : values[i]) {
                 assertTrue(v >= min);
                 assertTrue(v < max);
             }
@@ -25,10 +24,44 @@ class RandomMatrixGeneratorTest {
     void randomMatrixInRangeTest() {
         //Сгенерированные элементы матрицы лежат в указанном диапазоне
         RandomMatrixGenerator gen = new RandomMatrixGenerator();
-        assertIn(gen, 3.47f, 8.12f);
-        assertIn(gen, -0.1f, 0.1f);
-        assertIn(gen, 0.1f, 0.2f);
-        assertIn(gen, 0.001f, 0.4f);
+        float min, max;
+
+        min = 3.47f;
+        max = 8.12f;
+        assertInRange(gen.generateMatrix(600,90, min, max), min, max);
+
+        min = -0.01f;
+        max = 0.0001f;
+        assertInRange(gen.generateMatrix(600,90, min, max), min, max);
+    }
+
+    @Test
+    void randomMatrixInRangeDefaultTest() {
+        float min = 0.1f, max = 0.3f;
+        RandomMatrixGenerator generator = new RandomMatrixGenerator(min, max);
+        assertInRange(generator.generateMatrix(60, 900), min, max);
+    }
+
+    @Test
+    void randomMatricesInRangeTest() {
+        RandomMatrixGenerator gen = new RandomMatrixGenerator();
+
+        float min = -0.5f, max = 0.01f;
+        Matrix[] matrices = gen.generateMatrices(min, max, 100, 50, 200);
+        for (Matrix matrix : matrices) {
+            assertInRange(matrix, min, max);
+        }
+    }
+
+    @Test
+    void randomMatricesDefaultInRangeTest() {
+        float min = -0.1f, max = 5.01f;
+        RandomMatrixGenerator gen = new RandomMatrixGenerator(min, max);
+
+        Matrix[] matrices = gen.generateMatrices(100, 50, 200);
+        for (Matrix matrix : matrices) {
+            assertInRange(matrix, min, max);
+        }
     }
 
     @Test
@@ -41,17 +74,14 @@ class RandomMatrixGeneratorTest {
 
     void checkMatrixSize(Matrix matrix, int rows, int columns) {
         assertEquals(matrix.getColumns(), columns);
-        assertEquals(matrix.getRows(), rows);
+        assertEquals(matrix.getRows(), rows + 1);
         assertNotNull(matrix.getValues());
-        assertEquals(matrix.getValues().length, rows);
-        assertEquals(matrix.getValues()[0].length, columns);
     }
 
     @Test
     void randomMatricesOnesTest() {
         RandomMatrixGenerator generator = new RandomMatrixGenerator();
-        Matrix[] matrices = generator.generateMatrices(true, 1, 1, 1);
-        System.out.println(Arrays.toString(matrices));
+        Matrix[] matrices = generator.generateMatrices(1, 1, 1);
         assertTrue(matrices.length == 2);
         checkMatrixSize(matrices[0], 1, 2);
         checkMatrixSize(matrices[1], 1, 2);

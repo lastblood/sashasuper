@@ -1,6 +1,5 @@
 package ru.sashasuper.logic.neural;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.Matrix;
 import ru.sashasuper.logic.Network;
@@ -24,7 +23,6 @@ public class BackPropagationBiasedTest {
                 .collect(Collectors.toList());
 
         for (int i = 0; i <= epochs; i++) {
-            if(i % 10 == 0)
             for (AbstractMap.SimpleEntry<Vector, Vector> entry : entries) {
                 nn.backPropagation(entry.getKey(), entry.getValue());
             }

@@ -3,12 +3,14 @@ package ru.sashasuper.logic.generators;
 import ru.sashasuper.logic.Matrix;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
-    private Random random = null;
+public class RandomMatrixGenerator extends MatrixGenerator {
+    private Random random = ThreadLocalRandom.current();
+    private LambdaAllMatrixGenerator internalGenerator;
 
     private float defaultMin = 0, defaultMax = 1;
 
@@ -25,23 +27,25 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
     };
 
     public RandomMatrixGenerator() {
-        this.random = new Random();
+        internalGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
     public RandomMatrixGenerator(Random random) {
         this.random = random;
+        internalGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
     public RandomMatrixGenerator(float defaultMin, float defaultMax) {
-        this.random = new Random();
         this.defaultMin = defaultMin;
         this.defaultMax = defaultMax;
+        internalGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
     public RandomMatrixGenerator(Random random, float defaultMin, float defaultMax) {
         this.random = random;
         this.defaultMin = defaultMin;
         this.defaultMax = defaultMax;
+        internalGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
 
@@ -53,14 +57,14 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
     }
 
     public Matrix generateMatrix(int rows, int columns) {
-        Matrix result = super.generateMatrix(rows, columns);
+        Matrix result = internalGenerator.generateMatrix(rows, columns);
         return (defaultMin == 0 && defaultMax == 1) ? result : normalizeMatrixTo(result, defaultMin, defaultMax);
     }
 
 
     // Генерация массива матриц для заданных размеров векторов (значащих полей, без biases)
-    public Matrix[] generateMatrices(boolean biased, float min, float max, int ... sizes) {
-        Matrix[] matrices = generateMatrices(biased, sizes);
+    public Matrix[] generateMatrices(float min, float max, int ... sizes) {
+        Matrix[] matrices = generateMatrices(sizes);
 
         for (Matrix matrix : matrices)
             normalizeMatrixTo(matrix, min, max);
@@ -68,11 +72,22 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
         return matrices;
     }
 
+    @Override
+    public Matrix[] generateMatrices(int... sizes) {
+        Matrix[] matrices = internalGenerator.generateMatrices(sizes);
+
+        for (Matrix matrix : matrices)
+            normalizeMatrixTo(matrix, defaultMin, defaultMax);
+
+        return matrices;
+    }
+
     // Изменяет оригинальный объект, ссылка возвращается на него же
     private Matrix normalizeMatrixTo(Matrix result, float min, float max) {
         thr(min > max);
+        if(min == 0 && max == 1) return result;
 
-        for (int i = 0; i < result.getRows(); i++) {
+        for (int i = 0; i < result.getRows() - 1; i++) {
             for (int j = 0; j < result.getColumns(); j++) {
                 result.getValues()[i][j] *= max - min;
                 result.getValues()[i][j] += min;
@@ -80,12 +95,6 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
         }
 
         return result;
-    }
-
-
-    @Override
-    protected BiFunction<Integer, Integer, Matrix> getInternalGenerator() {
-        return randomInternalGenerator;
     }
 
     public RandomMatrixGenerator setDefaultMin(float defaultMin) {

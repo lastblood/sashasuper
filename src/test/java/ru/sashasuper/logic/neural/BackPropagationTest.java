@@ -51,14 +51,14 @@ public class BackPropagationTest {
 
     @Test
     void halfMultiplierLinear() {
-        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f}}) }, new Identity(), 0.1f, false);
-        halfMultiplier(nn, 50);
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f, 0f}}) }, new Identity(), 0.1f, true);
+        halfMultiplier(nn, 100);
     }
 
     @Test
     void halfMultiplierReLU() {
-        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f}}) }, new ReLU(), 0.1f, false);
-        halfMultiplier(nn, 50);
+        Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{0.8f, 0f}}) }, new ReLU(), 0.1f, true);
+        halfMultiplier(nn, 100);
     }
 
 
@@ -67,7 +67,7 @@ public class BackPropagationTest {
         Random rand = new Random(101);
         RandomMatrixGenerator gen = new RandomMatrixGenerator(rand, 0.1f, 0.7f);
 
-        Network nn = new Network(gen.generateMatrices(true, 2, 4, 2),
+        Network nn = new Network(gen.generateMatrices(2, 4, 2),
                 new ReLU(), 0.03f, true);
 
         List<SimpleEntry<Vector, Vector>> vectors = List.of(
@@ -87,7 +87,7 @@ public class BackPropagationTest {
     }
 
 
-    void hard(Network nn, int epochs) {
+    void rainTest(Network nn, int epochs) {
         System.out.println(nn.getActivateFunction());
         List<SimpleEntry<Vector, Vector>> vectors = List.of(
                 new SimpleEntry<>(new Vector(0, 0, 0), new Vector(0)),
@@ -100,12 +100,11 @@ public class BackPropagationTest {
                 new SimpleEntry<>(new Vector(1, 1, 1), new Vector(1))
         );
 
-        float sum = 0;
         for(int i = 0; i <= epochs; i++) {
             for (SimpleEntry<Vector, Vector> entry : vectors)
-                nn.backPropagation(entry.getKey(), entry.getValue());
+                nn.backPropagation(entry.getKey(), entry.getValue(), true);
 
-            if(i % 10 == 0 && nn.test(vectors).sumMetric < 0.3f && vectors.stream().noneMatch(entry ->
+            if(i % 10 == 0 && nn.test(vectors).sumMetric < 0.1f && vectors.stream().noneMatch(entry ->
                     (nn.process(entry.getKey()).getValues()[0] > 0.5) ^ (entry.getValue().getValues()[0] > 0.5))) {
                 System.out.println(i);
                 return;
@@ -118,32 +117,33 @@ public class BackPropagationTest {
     @Test
     void rainTestLogistic() {
         Network nn = new Network(new RandomMatrixGenerator(new Random(0), -0.9f, 0.9f)
-                    .generateMatrices(false, 3, 3, 1),
-                new Logistic(), 0.2f, false);
-        hard(nn, 1600);
+                    .generateMatrices(3, 3, 1),
+                new Logistic(), 0.2f, true);
+        rainTest(nn, 1600);
     }
 
-    @Test
-    void rainTestReLU() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(2),0.3f, 0.8f)
-                    .generateMatrices(false, 3, 3, 1),
-                new ReLU(), 0.03f, false);
-        hard(nn, 800);
-    }
+//    @Test
+//    void rainTestReLU() {
+//        Network nn = new Network(new RandomMatrixGenerator(new Random(3),0.01f, 0.1f)
+//                    .generateMatrices(3, 3, 1),
+//                new ReLU(), 0.05f, true); // todo: biased false
+//        System.out.println(Arrays.deepToString(nn.getWeightMatrices()[0].getValues()));
+//        rainTest(nn, 800);
+//    }
 
     @Test
     void rainTestTanH() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.3f, 0.8f)
-                .generateMatrices(false, 3, 3, 1),
-                new TanH(), 0.03f, false);
-        hard(nn, 1000);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0),-0.1f, 0.1f)
+                .generateMatrices(3, 3, 1),
+                new TanH(), 0.03f, true);
+        rainTest(nn, 1000);
     }
 
     @Test
     void rainTestSoft() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.3f, 0.8f)
-                .generateMatrices(false, 3, 2, 1),
-                new SoftPlus(), 0.03f, false);
-        hard(nn, 3000);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.1f, 0.4f)
+                .generateMatrices(3, 3, 1),
+                new SoftPlus(), 0.05f, true);
+        rainTest(nn, 3000);
     }
 }

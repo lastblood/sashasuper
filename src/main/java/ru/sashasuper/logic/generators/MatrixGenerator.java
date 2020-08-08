@@ -4,5 +4,5 @@ import ru.sashasuper.logic.Matrix;
 
 public abstract class MatrixGenerator {
     abstract public Matrix generateMatrix(int rows, int columns);
-    abstract public Matrix[] generateMatrices(boolean biased, int ... sizes);
+    abstract public Matrix[] generateMatrices(int ... sizes);
 }
