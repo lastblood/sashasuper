@@ -150,7 +150,7 @@ class VectorMathTest {
         Vector v1 = new Vector(column);
         Vector v2 = new Vector(row);
 
-        float[][] result = {{0, -5, 1}, {-0.0f, 5, -1}, {0, -15, 3}};
+        float[][] result = {{0, -5, 1}, {-0.0f, 5, -1}, {0, -15, 3}, {1, 0, 0}};
         Matrix res = multVectors(v1, v2, false);
         assertArrayEquals(res.getValues(), result);
     }
