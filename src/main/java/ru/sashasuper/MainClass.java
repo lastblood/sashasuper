@@ -33,24 +33,28 @@ public class MainClass {
                 "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
                 true, true).read();
 
-        Network nn = new Network(new RandomMatrixGenerator(new Random(155))
-                .generateMatrices(true, -0.05f, 0.05f, 784, 150, 10), new Logistic(), 1f);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(152))
+//                .generateMatrices(true, -0.02f, 0.02f, 784, 200, 10), new Logistic(), 1f);
+                .generateMatrices(-0.05f, 0.05f, 784, 100, 10),
+                new Logistic(), 1f);
 
         System.out.println("Generate");
-        System.out.println(nn.test(test));
+        MomentumStat lastStat = nn.test(test);
+        System.out.println(lastStat);
 
 //        ExecutorService service = Executors.newFixedThreadPool(2);
 
-        float learning_rate = 0.2f;
-        float lr_multiplier = 0.95f;
-        float min_learning_rate = 0.001f;
-
-        MomentumStat lastStat = null;
+        float learning_rate = 1.5f;
+        float lr_multiplier = .95f;
+        float min_learning_rate = 0.1f;
 
         while(learning_rate > min_learning_rate) {
             nn.setLearningRate(learning_rate);
             long time = System.currentTimeMillis();
-            nn = trainNetwork(nn, train);
+            List<Dataset> batches = train.getBatches(4000);
+            for (Dataset batch : batches)
+                nn.trainAtBatch(batch);
+//            nn = trainNetwork(nn, train);
 //            nn = trainNetworkAverage(nn, train, test, 2, service);
 
 //            MomentumStat statTrain = nn.test(train);
@@ -58,16 +62,17 @@ public class MainClass {
 
             time = System.currentTimeMillis() - time;
             MomentumStat statTest = nn.test(test);
-            System.out.printf("%2.2f%% LR: %1.4f %dмс\n", percent.apply(statTest)*100, learning_rate, time);
-            System.out.printf("%s\n", statTest);
+            System.out.printf("%2.2f%% LR: %1.4f %dмс\n",
+                    percent.apply(statTest)*100, learning_rate, time);
+//            System.out.println(statTrain);
+            System.out.println(statTest);
 
             learning_rate *= lr_multiplier;
-
             lastStat = statTest;
         }
 
-        try(ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(
-                "backup.nn")))) {
+        try(ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(
+                new FileOutputStream("backup.nn")))) {
             oos.writeObject(nn);
             System.out.println("Wrote");
         }

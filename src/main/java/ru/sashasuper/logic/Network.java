@@ -6,6 +6,7 @@ import ru.sashasuper.utils.NanDefender;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 
 import static ru.sashasuper.logic.VectorMath.*;
 import static ru.sashasuper.utils.Assertions.thr;
@@ -15,10 +16,11 @@ public class Network implements Serializable, Cloneable {
     private int outputSize;
     private int layerCount;
 
-    private Matrix[] weightMatrices;
-    private ActivateFunction activateFunction;
-    private float learningRate;
-    private boolean withBias;
+    protected Matrix[] weightMatrices;
+    protected ActivateFunction activateFunction;
+    protected float learningRate;
+    protected boolean withBias;
+    protected float regularizationRate = 0.001f;
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
@@ -32,6 +34,21 @@ public class Network implements Serializable, Cloneable {
         this.activateFunction = activateFunction;
         this.learningRate = learningRate;
         this.withBias = withBias;
+    }
+
+    public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias, float regularizationRate) {
+        thr(weightMatrices == null);
+        thr(learningRate <= 0 || learningRate > 1);
+
+        this.inputSize = weightMatrices[0].getColumns();
+        this.outputSize = weightMatrices[weightMatrices.length - 1].getRows();
+        this.layerCount = weightMatrices.length - 1;
+
+        this.weightMatrices = weightMatrices;
+        this.activateFunction = activateFunction;
+        this.learningRate = learningRate;
+        this.withBias = withBias;
+        this.regularizationRate = regularizationRate;
     }
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate) {
@@ -106,9 +123,12 @@ public class Network implements Serializable, Cloneable {
         return currentVector;
     }
 
-    // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
-    public void backPropagation(Vector input, Vector expectedOutput) {
-        thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
+    public Matrix[] backPropagation(Vector input, Vector expectedOutput) {
+        return backPropagation(input, expectedOutput, true);
+    }
+
+    public Matrix[] backPropagation(Vector input, Vector expectedOutput, boolean correct) {
+        thr(getWeightMatrices()[0].getColumns() != input.getLength(true));
 
         Vector[] activations = new Vector[getHiddenLayerCount() + 2];
         activations[0] = input;
@@ -124,19 +144,23 @@ public class Network implements Serializable, Cloneable {
 
             // Найти ошибку для выходного вектора
         Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
-        //Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
-        //Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+//        Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
+//        Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
         Vector errorLayer = costLayer; // Cross-entropy loss trigger
 
         thr(NanDefender.inVector(errorLayer));
 //        thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
+        Matrix[] subMatrices = new Matrix[getWeightMatrices().length];
+
             // Прогнать через backPropagation все слои
         for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
             thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
-            errorLayer = backPropagationIter(activations[index], z_vectors[index], errorLayer, index);
+            errorLayer = backPropagationIter(activations[index], z_vectors[index],
+                        errorLayer, subMatrices, index, correct);
             thr(NanDefender.inVector(errorLayer));
         }
+        return subMatrices;
     }
 
     // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
@@ -145,7 +169,7 @@ public class Network implements Serializable, Cloneable {
     // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
     // currentIndex указывает на индекс текущей меняемой матрицы
     private Vector backPropagationIter(Vector lastLayer, Vector currentLayer,
-                                       Vector nextError, int currentIndex) {
+                           Vector nextError, Matrix[] subMatrices, int currentIndex, boolean correct) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
 
         Vector gradient_layer = applyToVector(currentLayer, activateFunction, true);
@@ -156,22 +180,25 @@ public class Network implements Serializable, Cloneable {
 //        thr(NanDefender.inVector(delta_layer));
 
         // Корректировочная матрица для текущей матрицы весов в Network
-        Matrix currentMatrix = multMatrixByT(multVectors(lastLayer, delta_layer, withBias), getLearningRate());
+        subMatrices[currentIndex] = multMatrixByT(
+                multVectors(lastLayer, delta_layer, withBias), getLearningRate());
 //        thr(NanDefender.inMatrix(subMatrix));
 
-        final float regRate = 0.5f; // 0.45
-        Matrix current = getWeightMatrices()[currentIndex];
-        for (int y = 0; y < current.getRows(); y++)
-            for (int x = 0; x < current.getColumns() - 1; x++)
-                current.getValues()[y][x] *= 1 - learningRate*regRate/60000;
-//        thr(NanDefender.inMatrix(current));
+        Vector pastError = multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
+
+        if(correct) {
+            Matrix current = getWeightMatrices()[currentIndex];
+//            for (int y = 0; y < current.getRows(); y++)
+//                for (int x = 0; x < current.getColumns() - 1; x++)
+//                    current.getValues()[y][x] *= 1 - learningRate*regularizationRate/8;
 
         // Корректируем текущую матрицу весов
-        // todo: убрать отсель
-        getWeightMatrices()[currentIndex] = subMatrices(current, currentMatrix);
+            getWeightMatrices()[currentIndex] = subMatrices(current, subMatrices[currentIndex]);
+        }
 
         // Возвращаем ошибку, которую надо будет отправить на уровень назад
-        return multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
+        return pastError;
+//        return multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
     }
 
     private static int getMaxIndex(Vector v) {
@@ -188,17 +215,17 @@ public class Network implements Serializable, Cloneable {
         return test(dataset.getAll());
     }
 
-    public MomentumStat test(List<AbstractMap.SimpleEntry<Vector, Vector>> entriesList) {
+    public MomentumStat test(List<SimpleEntry<Vector, Vector>> entriesList) {
         float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
         double resultError = 0.0;
         int right = 0, wrong = 0;
 
-        List<AbstractMap.SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
+        List<SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
         Collections.shuffle(dataList);
 
 //        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(dataList.size() / 10);
 
-        for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataList) {
+        for (SimpleEntry<Vector, Vector> entry : dataList) {
             Vector resultVector = process(entry.getKey());
 
             int ind1 = getMaxIndex(entry.getValue()), ind2 = getMaxIndex(resultVector);
@@ -227,8 +254,8 @@ public class Network implements Serializable, Cloneable {
     }
 
     public void learnIteration(Dataset dataset) {
-        for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
-            backPropagation(entry.getKey(), entry.getValue());
+        for (SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
+            backPropagation(entry.getKey(), entry.getValue(), true);
         }
     }
 
