@@ -7,6 +7,7 @@ import ru.sashasuper.utils.NanDefender;
 import java.io.Serializable;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.stream.IntStream;
 
 import static ru.sashasuper.logic.VectorMath.*;
 import static ru.sashasuper.utils.Assertions.thr;
@@ -123,6 +124,33 @@ public class Network implements Serializable, Cloneable {
         return currentVector;
     }
 
+    public void trainAtBatch(Dataset data) {
+        List<SimpleEntry<Vector, Vector>> all = data.getAll();
+        Matrix[] subMatrices = all.parallelStream()
+                .map(x -> backPropagation(x.getKey(), x.getValue(), false))
+                .reduce((matrices1, matrices2) -> IntStream.range(0, matrices1.length)
+                        .mapToObj(index -> addMatrices(matrices1[index], matrices2[index]))
+                        .toArray(Matrix[]::new))
+                .orElseThrow();
+
+        for (int i = 0; i < getWeightMatrices().length; i++) {
+            Matrix weightMatrix = getWeightMatrices()[i];
+            Matrix subMatrix = subMatrices[i];
+            thr(weightMatrix.getRows() != subMatrix.getRows() ||
+                    weightMatrix.getColumns() != subMatrix.getColumns());
+
+            float[][] matrixValues = weightMatrix.getValues();
+            float[][] subMatrixValues = subMatrix.getValues();
+
+            for (int y = 0; y < weightMatrix.getRows(); y++) {
+                for (int x = 0; x < weightMatrix.getColumns(); x++) {
+                    matrixValues[y][x] = matrixValues[y][x] * (1 - learningRate*regularizationRate/60000)
+                                    - learningRate / all.size() * subMatrixValues[y][x];
+                }
+            }
+        }
+    }
+
     public Matrix[] backPropagation(Vector input, Vector expectedOutput) {
         return backPropagation(input, expectedOutput, true);
     }
@@ -165,9 +193,6 @@ public class Network implements Serializable, Cloneable {
 
     // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
     //  поэлементное вычитание матриц, применение матрицы к вектору с другой стороны (ВСЕ ЭТО ТОЛЬКО ЗДЕСЬ)
-    
-    // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
-    // currentIndex указывает на индекс текущей меняемой матрицы
     private Vector backPropagationIter(Vector lastLayer, Vector currentLayer,
                            Vector nextError, Matrix[] subMatrices, int currentIndex, boolean correct) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
