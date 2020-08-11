@@ -5,6 +5,7 @@ import ru.sashasuper.logic.functions.ActivateFunction;
 import ru.sashasuper.logic.functions.ElementFunction;
 
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
@@ -135,17 +136,26 @@ public class VectorMath {
         return result;
     }
 
+    // Поэлементное сложение матриц
+    public static Matrix addMatrices(Matrix firstMatrix, Matrix secondMatrix) {
+        return binaryMatrixOperation(firstMatrix, secondMatrix, (a,b) -> a + b);
+    }
+
     // Поэлементное вычитание матриц
     public static Matrix subMatrices(Matrix firstMatrix, Matrix secondMatrix) {
-        int columns = firstMatrix.getColumns(), rows = firstMatrix.getRows();
-        thr(columns != secondMatrix.getColumns() || rows != secondMatrix.getRows());
+        return binaryMatrixOperation(firstMatrix, secondMatrix, (a,b) -> a - b);
+    }
+
+    public static Matrix binaryMatrixOperation(Matrix first, Matrix second, BinaryOperator<Float> op) {
+        int columns = first.getColumns(), rows = first.getRows();
+        thr(columns != second.getColumns() || rows != second.getRows());
 
         float[][] valuesResult = new float[rows][columns];
-        float[][] values1 = firstMatrix.getValues();
-        float[][] values2 = secondMatrix.getValues();
+        float[][] values1 = first.getValues();
+        float[][] values2 = second.getValues();
         for (int y = 0; y < rows; y++)
             for (int x = 0; x < columns; x++)
-                valuesResult[y][x] = values1[y][x] - values2[y][x];
+                valuesResult[y][x] = op.apply(values1[y][x], values2[y][x]);
 
         return new Matrix(valuesResult);
     }
