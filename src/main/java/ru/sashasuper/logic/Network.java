@@ -22,6 +22,8 @@ public class Network implements Serializable, Cloneable {
     private float learningRate;
     private boolean withBias;
 
+    public float regularizationRate = 0.2f;
+
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
         thr(learningRate <= 0 || learningRate > 1);
@@ -153,8 +155,9 @@ public class Network implements Serializable, Cloneable {
 
             // Найти ошибку для выходного вектора
         Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
-        Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
-        Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+//        Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
+//        Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
+        Vector errorLayer = costLayer; // Cross-entropy loss trigger
 
         thr(NanDefender.inVector(errorLayer));
 //        thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
@@ -202,10 +205,13 @@ public class Network implements Serializable, Cloneable {
                 subMatrices[currentIndex].getRows() != current.getRows());
 
         Vector result = multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
-        // Корректируем текущую матрицу весов
-        // todo: переделать на использование L2
-        if(correct)
+        if(correct) { // Корректируем текущую матрицу весов
+            for (int y = 0; y < current.getRows(); y++)
+                for (int x = 0; x < current.getColumns() - 1; x++)
+                    current.getValues()[y][x] *= 1 - learningRate*regularizationRate/60000;
+
             getWeightMatrices()[currentIndex] = subMatrices(current, subMatrices[currentIndex]);
+        }
 
         // Возвращаем ошибку, которую надо будет отправить на уровень назад
         return result;
