@@ -20,7 +20,7 @@ public class ForwardPropagationTest {
         assertVectorsEquals(nn.process(new Vector(10, -0.0f, -10)), 20);
         assertVectorsEquals(nn.process(new Vector(-10, -10, 50)), 10);
     }
-
+/*
     @Test
     void forwardReLULinear() {
         Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{2, -3, 0}}) },
@@ -30,7 +30,7 @@ public class ForwardPropagationTest {
         assertVectorsEquals(nn.process(new Vector(10, -0.0f, -10)), 20);
         assertVectorsEquals(nn.process(new Vector(-10, -10, 50)), 10);
     }
-
+*/
     @Test
     void forwardIdentityHidden() {
         Network nn = new Network(new Matrix[]{ new Matrix(new float[][]{{2, -3}, {0, 5}}), new Matrix(new float[][]{{-5, 2}}) },
