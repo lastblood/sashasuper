@@ -6,6 +6,8 @@ import ru.sashasuper.utils.NanDefender;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.stream.IntStream;
 
 import static ru.sashasuper.logic.VectorMath.*;
 import static ru.sashasuper.utils.Assertions.thr;
@@ -106,8 +108,35 @@ public class Network implements Serializable, Cloneable {
         return currentVector;
     }
 
+    public void trainAtBatch(Dataset data) {
+        List<SimpleEntry<Vector, Vector>> all = data.getAll();
+        Matrix[] subMatrices = all.parallelStream()
+                .map(x -> backPropagation(x.getKey(), x.getValue(), false))
+                .reduce((matrices1, matrices2) -> IntStream.range(0, matrices1.length)
+                        .mapToObj(index -> addMatrices(matrices1[index], matrices2[index]))
+                        .toArray(Matrix[]::new))
+                .orElseThrow();
+
+        for (int i = 0; i < getWeightMatrices().length; i++) {
+            Matrix weightMatrix = getWeightMatrices()[i];
+            Matrix subMatrix = subMatrices[i];
+            thr(weightMatrix.getRows() != subMatrix.getRows() ||
+                    weightMatrix.getColumns() != subMatrix.getColumns());
+
+            float[][] matrixValues = weightMatrix.getValues();
+            float[][] subMatrixValues = subMatrix.getValues();
+
+            for (int y = 0; y < weightMatrix.getRows(); y++) {
+                for (int x = 0; x < weightMatrix.getColumns(); x++) {
+                    matrixValues[y][x] = matrixValues[y][x] * (1 - learningRate*regularizationRate/60000)
+                            - (learningRate / all.size()) * subMatrixValues[y][x];
+                }
+            }
+        }
+    }
+
     // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
-    public void backPropagation(Vector input, Vector expectedOutput) {
+    public Matrix[] backPropagation(Vector input, Vector expectedOutput, boolean correct) {
         thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
 
         Vector[] activations = new Vector[getHiddenLayerCount() + 2];
@@ -135,18 +164,24 @@ public class Network implements Serializable, Cloneable {
             // Прогнать через backPropagation все слои
         for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
             thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
-            errorLayer = backPropagationIter(activations[index], z_vectors[index], errorLayer, subMatrices, index);
+            errorLayer = backPropagationIter(activations[index], z_vectors[index],
+                            errorLayer, subMatrices, index, correct);
             thr(NanDefender.inVector(errorLayer));
         }
+
+        return subMatrices;
     }
 
     // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
     //  поэлементное вычитание матриц, применение матрицы к вектору с другой стороны (ВСЕ ЭТО ТОЛЬКО ЗДЕСЬ)
-    
     // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
     // currentIndex указывает на индекс текущей меняемой матрицы
+
+    public Matrix[] backPropagation(Vector input, Vector expectedOutput) {
+        return backPropagation(input, expectedOutput, true);
+    }
     private Vector backPropagationIter(Vector lastLayer, Vector currentLayer,
-                                       Vector nextError, Matrix[] subMatrices, int currentIndex) {
+                            Vector nextError, Matrix[] subMatrices, int currentIndex, boolean correct) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
 
         Vector gradient_layer = applyToVector(currentLayer, activateFunction, true);
@@ -166,12 +201,14 @@ public class Network implements Serializable, Cloneable {
         thr(subMatrices[currentIndex].getColumns() != current.getColumns() ||
                 subMatrices[currentIndex].getRows() != current.getRows());
 
+        Vector result = multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
         // Корректируем текущую матрицу весов
-        // todo: убрать отсель
-        getWeightMatrices()[currentIndex] = subMatrices(current, subMatrices[currentIndex]);
+        // todo: переделать на использование L2
+        if(correct)
+            getWeightMatrices()[currentIndex] = subMatrices(current, subMatrices[currentIndex]);
 
         // Возвращаем ошибку, которую надо будет отправить на уровень назад
-        return multMatrixVectorTransposed(getWeightMatrices()[currentIndex], delta_layer, withBias);
+        return result;
     }
 
     private static int getMaxIndex(Vector v) {
@@ -188,17 +225,17 @@ public class Network implements Serializable, Cloneable {
         return test(dataset.getAll());
     }
 
-    public MomentumStat test(List<AbstractMap.SimpleEntry<Vector, Vector>> entriesList) {
+    public MomentumStat test(List<SimpleEntry<Vector, Vector>> entriesList) {
         float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
         double resultError = 0.0;
         int right = 0, wrong = 0;
 
-        List<AbstractMap.SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
+        List<SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
         Collections.shuffle(dataList);
 
 //        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(dataList.size() / 10);
 
-        for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataList) {
+        for (SimpleEntry<Vector, Vector> entry : dataList) {
             Vector resultVector = process(entry.getKey());
 
             int ind1 = getMaxIndex(entry.getValue()), ind2 = getMaxIndex(resultVector);
@@ -227,7 +264,7 @@ public class Network implements Serializable, Cloneable {
     }
 
     public void learnIteration(Dataset dataset) {
-        for (AbstractMap.SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
+        for (SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
             backPropagation(entry.getKey(), entry.getValue());
         }
     }
