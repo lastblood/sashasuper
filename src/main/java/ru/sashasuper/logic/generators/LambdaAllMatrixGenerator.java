@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class LambdaAllMatrixGenerator extends MatrixGenerator {
+public class LambdaAllMatrixGenerator extends AbstractMatrixGenerator {
 
     private BiFunction<Integer, Integer, Matrix> internalGenerator = null;
 
