@@ -34,27 +34,30 @@ public class MainClass {
                 true, true).read();
 
         Network nn = new Network(new RandomMatrixGenerator(new Random(151))
-                .generateMatrices(true, -0.1f, 0.1f, 784, 50, 10), new Logistic(), 1f);
+                    .generateMatrices(true, -0.1f, 0.1f, 784, 50, 10),
+                new Logistic(), 1f);
 
         System.out.println("Generate");
         System.out.println(nn.test(test));
 
 //        ExecutorService service = Executors.newFixedThreadPool(2);
 
-        float learning_rate = 0.2f;
-        float lr_multiplier = 0.95f;
-        float min_learning_rate = 0.02f;
+        float learning_rate = 1.5f;
+        float lr_multiplier = 0.9f;
+        float min_learning_rate = 0.05f;
 
         MomentumStat lastStat = null;
 
         while(learning_rate > min_learning_rate) {
             nn.setLearningRate(learning_rate);
             long time = System.currentTimeMillis();
-            nn = trainNetwork(nn, train);
+//            nn = trainNetwork(nn, train);
+            train.getBatches(6000).forEach(nn::trainAtBatch);
+
 //            nn = trainNetworkAverage(nn, train, test, 2, service);
 
 //            MomentumStat statTrain = nn.test(train);
-//                MomentumStat statTest = entry.getKey();
+//            MomentumStat statTest = entry.getKey();
 
             time = System.currentTimeMillis() - time;
             MomentumStat statTest = nn.test(test);
@@ -62,15 +65,15 @@ public class MainClass {
             System.out.printf("%s\n", statTest);
 
 
-            if(lastStat != null && learning_rate > 0.005) {
-                int diff = statTest.countRight - lastStat.countRight;
-                if(diff < -20)
-                    learning_rate *= 0.1;
-                else if(diff < -5)
-                    learning_rate *= 0.5;
-                else
-                    learning_rate *= lr_multiplier;
-            } else
+//            if(lastStat != null && learning_rate > 0.005) {
+//                int diff = statTest.countRight - lastStat.countRight;
+//                if(diff < -20)
+//                    learning_rate *= 0.1;
+//                else if(diff < -5)
+//                    learning_rate *= 0.5;
+//                else
+//                    learning_rate *= lr_multiplier;
+//            } else
                 learning_rate *= lr_multiplier;
 
             lastStat = statTest;
@@ -144,46 +147,5 @@ public class MainClass {
             }
         }
         return new Matrix(result);
-    }
-
-    private static SimpleEntry<MomentumStat, Network> trainNetworkBest(
-            Network nn, Dataset train, int BATCHES, float rate, ExecutorService service)
-                    throws CloneNotSupportedException, ExecutionException, InterruptedException {
-
-        Future[] resultArray = new Future[BATCHES];
-        Network[] nets = new Network[BATCHES];
-
-        for (int i = 0; i < BATCHES; i++) {
-            Network currentNetwork = (Network) nn.clone();
-            currentNetwork.setLearningRate(rate);
-            nets[i] = currentNetwork;
-
-            resultArray[i] = service.submit(() -> trainNetwork(currentNetwork, train));
-        }
-
-        MomentumStat bestStat = null;
-        Network bestNetwork = null;
-
-        int countDone = 0;
-        while(countDone < BATCHES) {
-            for (int i = 0; i < BATCHES; i++) {
-                if(resultArray[i].isDone()) {
-                    SimpleEntry current = (SimpleEntry) resultArray[i].get();
-                    MomentumStat stat = (MomentumStat) current.getKey();
-                    int metric = stat.countRight;
-
-                    if(bestNetwork == null || bestStat.countRight < metric) {
-                        bestStat = stat;
-                        bestNetwork = (Network) current.getValue();
-                    }
-
-                    countDone++;
-                }
-            }
-
-            Thread.sleep(50);
-        }
-
-        return new SimpleEntry<>(bestStat, bestNetwork);
     }
 }

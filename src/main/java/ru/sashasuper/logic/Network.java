@@ -22,7 +22,7 @@ public class Network implements Serializable, Cloneable {
     private float learningRate;
     private boolean withBias;
 
-    public float regularizationRate = 0.2f;
+    public float regularizationRate = 0.08f;
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
