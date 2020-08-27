@@ -37,8 +37,7 @@ public class BackPropagationTest {
                 .collect(Collectors.toList());
 
         for (int i = 0; i <= epochs; i++) {
-            if(i % 10 == 0)
-                System.out.println("nn = " + Arrays.toString(nn.getWeightMatrices()));
+//            if(i % 10 == 0) System.out.println("nn = " + Arrays.toString(nn.getWeightMatrices()));
             for (SimpleEntry<Vector, Vector> object : entries)
                 nn.backPropagation(object.getKey(), object.getValue());
         }
