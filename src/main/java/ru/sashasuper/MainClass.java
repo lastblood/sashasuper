@@ -11,6 +11,7 @@ import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 import java.io.*;
 import java.util.*;
 import java.util.AbstractMap.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.zip.GZIPOutputStream;
@@ -20,7 +21,6 @@ import static ru.sashasuper.utils.Assertions.thr;
 public class MainClass {
     static final Function<MomentumStat, Double> percent = stat ->
             (double) stat.countRight / (stat.countRight + stat.countWrong);
-
 
     public static void main(String[] args) throws IOException, CloneNotSupportedException,
             InterruptedException, ExecutionException {
@@ -33,8 +33,8 @@ public class MainClass {
                 "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
                 true, true).read();
 
-        Network nn = new Network(new RandomMatrixGenerator(new Random(151))
-                    .generateMatrices(true, -0.1f, 0.1f, 784, 50, 10),
+        Network nn = new Network(new RandomMatrixGenerator(new Random(15123))
+                    .generateMatrices(true, -0.01f, 0.01f, 784, 300, 10),
                 new Logistic(), 1f);
 
         System.out.println("Generate");
@@ -42,9 +42,9 @@ public class MainClass {
 
 //        ExecutorService service = Executors.newFixedThreadPool(2);
 
-        float learning_rate = 1.5f;
+        float learning_rate = 1f;
         float lr_multiplier = 0.9f;
-        float min_learning_rate = 0.05f;
+        float min_learning_rate = 0.003f;
 
         MomentumStat lastStat = null;
 

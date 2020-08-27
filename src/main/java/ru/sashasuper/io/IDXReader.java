@@ -33,7 +33,7 @@ public class IDXReader {
         this.gzippedLabels = gzippedLabels;
     }
 
-    private int readUnsignedInt(InputStream inImage) throws IOException {
+    protected int readUnsignedInt(InputStream inImage) throws IOException {
         long temp = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
         thr(temp < 0, "Wrong value for unsigned integer: " + temp);
         return (int) temp;
@@ -56,7 +56,7 @@ public class IDXReader {
         return new Vector(array);
     }
 
-    private List<SimpleEntry<Vector, Integer>> readIDX
+    protected List<SimpleEntry<Vector, Integer>> readIDX
             (InputStream imageInput, InputStream labelInput, int pixels, int images) throws IOException {
 
         List<SimpleEntry<Vector, Integer>> result = new ArrayList<>(images);

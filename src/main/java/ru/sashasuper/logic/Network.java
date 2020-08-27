@@ -2,11 +2,14 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.logic.functions.ActivateFunction;
+import ru.sashasuper.preprocessing.ElasticDeformation;
 import ru.sashasuper.utils.NanDefender;
 
+import java.awt.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static ru.sashasuper.logic.VectorMath.*;
@@ -22,7 +25,7 @@ public class Network implements Serializable, Cloneable {
     private float learningRate;
     private boolean withBias;
 
-    public float regularizationRate = 0.08f;
+    public float regularizationRate = 0.03f;
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
@@ -110,10 +113,13 @@ public class Network implements Serializable, Cloneable {
         return currentVector;
     }
 
+    static final Dimension MNIST_DIMENSION = new Dimension(28, 28);
+    ElasticDeformation deformator = new ElasticDeformation(5, 0.05f, new Random(123456));
+
     public void trainAtBatch(Dataset data) {
         List<SimpleEntry<Vector, Vector>> all = data.getAll();
         Matrix[] subMatrices = all.parallelStream()
-                .map(x -> backPropagation(x.getKey(), x.getValue(), false))
+                .map(x -> backPropagation(deformator.deformate(x.getKey(), MNIST_DIMENSION), x.getValue(), false))
                 .reduce((matrices1, matrices2) -> IntStream.range(0, matrices1.length)
                         .mapToObj(index -> addMatrices(matrices1[index], matrices2[index]))
                         .toArray(Matrix[]::new))
