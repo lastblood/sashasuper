@@ -107,8 +107,10 @@ public class ElasticDeformation {
         float[] diffY = new float[newlen];
 
         for (int i = 0; i < newlen; i++) {
-            diffX[i] = (float) localRandom.nextGaussian();
-            diffY[i] = (float) localRandom.nextGaussian();
+//            diffX[i] = (float) localRandom.nextGaussian();
+//            diffY[i] = (float) localRandom.nextGaussian();
+            diffX[i] = localRandom.nextFloat() * 2 - 1;
+            diffY[i] = localRandom.nextFloat() * 2 - 1;
         }
 
         diffX = gaussianFilter(diffX, to, radius);

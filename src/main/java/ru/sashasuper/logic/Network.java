@@ -25,7 +25,7 @@ public class Network implements Serializable, Cloneable {
     private float learningRate;
     private boolean withBias;
 
-    public float regularizationRate = 0.03f;
+    public float regularizationRate = 0.01f;
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
@@ -114,12 +114,17 @@ public class Network implements Serializable, Cloneable {
     }
 
     static final Dimension MNIST_DIMENSION = new Dimension(28, 28);
-    ElasticDeformation deformator = new ElasticDeformation(5, 0.05f, new Random(123456));
+    transient ElasticDeformation deformator = new ElasticDeformation(4, 0.05f, new Random(123456));
 
     public void trainAtBatch(Dataset data) {
+        if(deformator == null) deformator = new ElasticDeformation(5, 0.03f, new Random(123456));
         List<SimpleEntry<Vector, Vector>> all = data.getAll();
         Matrix[] subMatrices = all.parallelStream()
-                .map(x -> backPropagation(deformator.deformate(x.getKey(), MNIST_DIMENSION), x.getValue(), false))
+                .map(x -> backPropagation(
+                        deformator.deformate(
+                                x.getKey(),
+                                MNIST_DIMENSION),
+                        x.getValue(), false))
                 .reduce((matrices1, matrices2) -> IntStream.range(0, matrices1.length)
                         .mapToObj(index -> addMatrices(matrices1[index], matrices2[index]))
                         .toArray(Matrix[]::new))

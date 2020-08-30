@@ -14,6 +14,7 @@ import java.util.AbstractMap.*;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.*;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static ru.sashasuper.utils.Assertions.thr;
@@ -33,26 +34,41 @@ public class MainClass {
                 "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
                 true, true).read();
 
-        Network nn = new Network(new RandomMatrixGenerator(new Random(15123))
-                    .generateMatrices(true, -0.01f, 0.01f, 784, 300, 10),
-                new Logistic(), 1f);
+//        Network nn = new Network(new RandomMatrixGenerator(new Random(15123))
+//                    .generateMatrices(true, -0.1f, 0.1f, 784, 100, 10),
+//                new Logistic(), 1f);
+
+        Network nn = null;
+        try {
+            nn = (Network) new ObjectInputStream(new GZIPInputStream(
+                    new FileInputStream("backup100_98.nn"))).readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(-10);
+        }
 
         System.out.println("Generate");
         System.out.println(nn.test(test));
 
 //        ExecutorService service = Executors.newFixedThreadPool(2);
 
-        float learning_rate = 1f;
-        float lr_multiplier = 0.9f;
+        float learning_rate = 0.5f;
+        float lr_multiplier = 1.05f;
         float min_learning_rate = 0.003f;
+        float max_learning_rate = 2f;
+        System.out.println("nn.regularizationRate = " + nn.regularizationRate);
+        nn.regularizationRate = 0.1f; //wanna 0.1
+        System.out.println("nn.regularizationRate = " + nn.regularizationRate);
 
         MomentumStat lastStat = null;
 
-        while(learning_rate > min_learning_rate) {
+//        while(learning_rate > min_learning_rate && (lastStat == null || lastStat.countWrong > 200)) {
+        while(learning_rate < max_learning_rate && (lastStat == null || lastStat.countWrong > 150)) {
             nn.setLearningRate(learning_rate);
+
             long time = System.currentTimeMillis();
 //            nn = trainNetwork(nn, train);
-            train.getBatches(6000).forEach(nn::trainAtBatch);
+            train.getBatches(7500).forEach(nn::trainAtBatch);
 
 //            nn = trainNetworkAverage(nn, train, test, 2, service);
 
@@ -80,7 +96,7 @@ public class MainClass {
         }
 
         try(ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(
-                "backup.nn")))) {
+                "backup100_985.nn")))) {
             oos.writeObject(nn);
             System.out.println("Wrote");
         }
