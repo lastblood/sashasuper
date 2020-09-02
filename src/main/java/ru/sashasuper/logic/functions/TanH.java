@@ -1,11 +1,8 @@
 package ru.sashasuper.logic.functions;
 
-import java.io.Serializable;
+public class TanH implements ElementActivateFunction {
 
-public class TanH implements Serializable, ActivateFunction {
-    public TanH(){
-    }
-
+    @Override
     public float process(float value) {
         if(value > 10f) return 1;
         if(value < -10f) return -1;
@@ -15,6 +12,7 @@ public class TanH implements Serializable, ActivateFunction {
         return (float) Math.tanh(value);
     }
 
+    @Override
     public float derivative(float value) {
         float result = process(value);
         return 1 - result*result;

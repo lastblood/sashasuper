@@ -1,17 +1,23 @@
 package ru.sashasuper.logic.functions;
 
-import java.io.Serializable;
+public class ReLU implements ElementActivateFunction {
 
-public class ReLU implements Serializable, ActivateFunction {
-    public ReLU(){}
+    private float negativeMultiplier = 0.05f, positiveMultiplier = 1.0f;
 
-    public float process(float value) {
-//        return value > 0 ? value : 0;
-        return value > 0 ? value : value * 0.1f;
+    public ReLU() {}
+
+    public ReLU(float negativeMultiplier, float positiveMultiplier) {
+        this.negativeMultiplier = negativeMultiplier;
+        this.positiveMultiplier = positiveMultiplier;
     }
 
+    @Override
+    public float process(float value) {
+        return value * (value > 0 ? positiveMultiplier : negativeMultiplier);
+    }
+
+    @Override
     public float derivative(float value) {
-//        return value > 0 ? 1 : 0;
-        return value > 0 ? 1 : 0.1f;
+        return value > 0 ? positiveMultiplier : negativeMultiplier;
     }
 }

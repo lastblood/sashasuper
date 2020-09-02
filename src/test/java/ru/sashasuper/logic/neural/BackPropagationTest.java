@@ -124,10 +124,10 @@ public class BackPropagationTest {
 
     @Test
     void rainTestReLU() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(2), -10f, 0.5f)
-                .generateMatrices(false, 3, 5, 1),
-                new ReLU(), 0.5f, false);
-        rainTest(nn, 500);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(5), -5f, 1f)
+                .generateMatrices(false,3, 10, 1),
+                new ReLU(), 1f, false);
+        rainTest(nn, 50);
     }
 
     @Test

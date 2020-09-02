@@ -107,7 +107,7 @@ public class Network implements Serializable, Cloneable {
         Vector currentVector = input;
         for (int i = 0; i < getWeightMatrices().length; i++) {
             currentVector = multMatrixVector(getWeightMatrices()[i], currentVector, withBias);
-            currentVector = applyToVector(currentVector, getActivateFunction());
+            currentVector = getActivateFunction().process(currentVector);
         }
 
         return currentVector;
@@ -159,14 +159,14 @@ public class Network implements Serializable, Cloneable {
 
         for (int i = 0; i < getWeightMatrices().length; i++) {
             z_vectors[i] = multMatrixVector(getWeightMatrices()[i], activations[i], withBias);
-            activations[i + 1] = applyToVector(z_vectors[i], getActivateFunction());
+            activations[i + 1] = getActivateFunction().process(z_vectors[i]);
         }
 
 //        thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
             // Найти ошибку для выходного вектора
         Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
-//        Vector gradientLayer = applyToVector(z_vectors[z_vectors.length-1], activateFunction, true);
+//        Vector gradientLayer = getActivateFunction().derivative(z_vectors[z_vectors.length - 1]);
 //        Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
         Vector errorLayer = costLayer; // Cross-entropy loss trigger
 
@@ -198,7 +198,7 @@ public class Network implements Serializable, Cloneable {
                             Vector nextError, Matrix[] subMatrices, int currentIndex, boolean correct) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
 
-        Vector gradient_layer = applyToVector(currentLayer, activateFunction, true);
+        Vector gradient_layer = getActivateFunction().derivative(currentLayer);
 //        thr(NanDefender.inVector(gradient_layer));
 
         // Вектор дельты

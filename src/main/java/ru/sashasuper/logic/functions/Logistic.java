@@ -1,14 +1,13 @@
 package ru.sashasuper.logic.functions;
 
-import java.io.Serializable;
+public class Logistic implements ElementActivateFunction {
 
-public class Logistic implements Serializable, ActivateFunction {
-    public Logistic(){}
-
+    @Override
     public float process(float value){
         return (float) (1 / (1 + Math.exp(-value)));
     }
 
+    @Override
     public float derivative(float value){
 //        return process(value) * process(-value);
 

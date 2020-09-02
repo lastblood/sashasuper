@@ -4,17 +4,17 @@ import ru.sashasuper.logic.Vector;
 
 import java.util.Arrays;
 
-public interface ElementFunction extends VectorFunction {
+public interface ElementActivateFunction extends ActivateFunction, ElementFunction {
     @Override
-    default Vector process(Vector operand) {
+    default Vector derivative(Vector operand) {
         float[] values = operand.getValues();
         float[] result = Arrays.copyOf(values, values.length);
 
         for (int i = 0; i < operand.getNonBiasedLength(); i++)
-            result[i] = process(result[i]);
+            result[i] = derivative(result[i]);
 
         return new Vector(true, result);
     }
 
-    float process(float value);
+    float derivative(float value);
 }

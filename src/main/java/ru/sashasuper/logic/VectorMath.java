@@ -2,7 +2,7 @@ package ru.sashasuper.logic;
 
 
 import ru.sashasuper.logic.functions.ActivateFunction;
-import ru.sashasuper.logic.functions.ElementFunction;
+import ru.sashasuper.logic.functions.VectorFunction;
 
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -34,12 +34,6 @@ public class VectorMath {
         int rows = matrix.getRows();
         int columns = matrix.getColumns() - (biased ? 1 : 0);
 
-//        System.out.println("rows = " + rows);
-//        System.out.println("columns = " + columns);
-//
-//        System.out.println("matrix = " + matrix);
-//        System.out.println("vector = " + vector);
-
         thr(vector.getNonBiasedLength() != rows);
 
         float[] result = new float[columns];
@@ -51,8 +45,6 @@ public class VectorMath {
             }
             result[i] = res;
         }
-
-//        System.out.println("result = " + Arrays.toString(result));
         return new Vector(result);
     }
 
@@ -108,32 +100,6 @@ public class VectorMath {
             }
         }
         return new Matrix(result);
-    }
-
-    public static Vector applyToVector(Vector vector, ElementFunction function) {
-        return applyToVector(vector, function, false);
-    }
-
-    //Поэлементное применение функции активации (самой функции или производной)
-    // todo: зачем здесь искусственный immutable? потанцевальная оптимизация
-    public static Vector applyToVector(Vector vector, ElementFunction function, boolean derivative) {
-        int len = vector.getNonBiasedLength();
-        Vector result = new Vector(new float[len]);
-
-        if(derivative) {
-            ActivateFunction f = (ActivateFunction) function;
-            for (int i = 0; i < len; i++) {
-                float x = vector.getValues()[i];
-                result.getValues()[i] = f.derivative(x);
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                float x = vector.getValues()[i];
-                result.getValues()[i] = function.process(x);
-            }
-        }
-
-        return result;
     }
 
     // Поэлементное сложение матриц

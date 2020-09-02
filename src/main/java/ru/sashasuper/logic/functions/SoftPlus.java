@@ -1,6 +1,6 @@
 package ru.sashasuper.logic.functions;
 
-public class SoftPlus implements ActivateFunction {
+public class SoftPlus implements ElementActivateFunction {
 
     @Override
     public float derivative(float value) {
