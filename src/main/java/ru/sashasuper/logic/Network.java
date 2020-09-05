@@ -2,7 +2,6 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.logic.functions.ActivateFunction;
-import ru.sashasuper.logic.functions.SoftMax;
 import ru.sashasuper.preprocessing.ElasticDeformation;
 import ru.sashasuper.utils.NanDefender;
 
@@ -155,9 +154,9 @@ public class Network implements Serializable, Cloneable {
         List<SimpleEntry<Vector, Vector>> all = data.getAll();
         Matrix[] subMatrices = all.parallelStream()
                 .map(x -> backPropagation(
-                        deformator.deformate(
+//                        deformator.deformate(
                                 x.getKey(),
-                                MNIST_DIMENSION),
+//                                MNIST_DIMENSION),
                         x.getValue(), false))
                 .reduce((matrices1, matrices2) -> IntStream.range(0, matrices1.length)
                         .mapToObj(index -> addMatrices(matrices1[index], matrices2[index]))
@@ -193,7 +192,6 @@ public class Network implements Serializable, Cloneable {
         return backPropagation(input, expectedOutput, true);
     }
 
-    private static SoftMax soft = new SoftMax();
     // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
     public Matrix[] backPropagation(Vector input, Vector expectedOutput, boolean correct) {
         thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
