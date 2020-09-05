@@ -2,6 +2,7 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.logic.functions.ActivateFunction;
+import ru.sashasuper.logic.functions.SoftMax;
 import ru.sashasuper.preprocessing.ElasticDeformation;
 import ru.sashasuper.utils.NanDefender;
 
@@ -10,6 +11,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static ru.sashasuper.logic.VectorMath.*;
@@ -21,11 +23,31 @@ public class Network implements Serializable, Cloneable {
     private int layerCount;
 
     private Matrix[] weightMatrices;
-    private ActivateFunction activateFunction;
-    private float learningRate;
     private boolean withBias;
+    private ActivateFunction activateFunction;
+    private LOSS_FUNCTION lossFunction = LOSS_FUNCTION.MEAN_SQUARED_ERROR;
 
-    public float regularizationRate = 0.01f;
+    private float learningRate;
+    private float regularizationRate = 0f;
+
+    public enum LOSS_FUNCTION {
+        MEAN_SQUARED_ERROR, CROSS_ENTROPY
+    }
+
+    public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias, LOSS_FUNCTION lossFunction) {
+        thr(weightMatrices == null);
+        thr(learningRate <= 0 || learningRate > 1);
+
+        this.inputSize = weightMatrices[0].getColumns();
+        this.outputSize = weightMatrices[weightMatrices.length - 1].getRows();
+        this.layerCount = weightMatrices.length - 1;
+
+        this.weightMatrices = weightMatrices;
+        this.activateFunction = activateFunction;
+        this.learningRate = learningRate;
+        this.withBias = withBias;
+        this.lossFunction = lossFunction;
+    }
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
@@ -84,8 +106,20 @@ public class Network implements Serializable, Cloneable {
         this.learningRate = learningRate;
     }
 
+    public float getRegularizationRate() {
+        return regularizationRate;
+    }
+
+    public void setRegularizationRate(float regularizationRate) {
+        this.regularizationRate = regularizationRate;
+    }
+
     public int getLayerCount() {
         return layerCount;
+    }
+
+    public LOSS_FUNCTION getLossFunction() {
+        return lossFunction;
     }
 
     public boolean isWithBias() {
@@ -148,6 +182,18 @@ public class Network implements Serializable, Cloneable {
         }
     }
 
+
+
+    // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
+    //  поэлементное вычитание матриц, применение матрицы к вектору с другой стороны (ВСЕ ЭТО ТОЛЬКО ЗДЕСЬ)
+    // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
+    // currentIndex указывает на индекс текущей меняемой матрицы
+
+    public Matrix[] backPropagation(Vector input, Vector expectedOutput) {
+        return backPropagation(input, expectedOutput, true);
+    }
+
+    private static SoftMax soft = new SoftMax();
     // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
     public Matrix[] backPropagation(Vector input, Vector expectedOutput, boolean correct) {
         thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
@@ -162,15 +208,21 @@ public class Network implements Serializable, Cloneable {
             activations[i + 1] = getActivateFunction().process(z_vectors[i]);
         }
 
-//        thr(!Arrays.stream(vectors).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
+//        activations[activations.length - 1] = soft.process(activations[activations.length - 1]);
 
-            // Найти ошибку для выходного вектора
+        // Найти ошибку для выходного вектора
         Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
-//        Vector gradientLayer = getActivateFunction().derivative(z_vectors[z_vectors.length - 1]);
-//        Vector errorLayer = multElements(costLayer, gradientLayer, withBias);
-        Vector errorLayer = costLayer; // Cross-entropy loss trigger
 
-        thr(NanDefender.inVector(errorLayer));
+        Vector errorLayer = null;
+        if(lossFunction == LOSS_FUNCTION.MEAN_SQUARED_ERROR) {
+            Vector gradientLayer = getActivateFunction().derivative(z_vectors[z_vectors.length - 1]);
+            errorLayer = multElements(costLayer, gradientLayer, withBias);
+        } else if(lossFunction == LOSS_FUNCTION.CROSS_ENTROPY) {
+            // Использование только для поддерживающих подобное сокращение функций потерь
+            errorLayer = costLayer;
+        }
+
+        thr(errorLayer == null || NanDefender.inVector(errorLayer));
 //        thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
 
         Matrix[] subMatrices = new Matrix[getWeightMatrices().length];
@@ -186,14 +238,7 @@ public class Network implements Serializable, Cloneable {
         return subMatrices;
     }
 
-    // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
-    //  поэлементное вычитание матриц, применение матрицы к вектору с другой стороны (ВСЕ ЭТО ТОЛЬКО ЗДЕСЬ)
-    // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
-    // currentIndex указывает на индекс текущей меняемой матрицы
 
-    public Matrix[] backPropagation(Vector input, Vector expectedOutput) {
-        return backPropagation(input, expectedOutput, true);
-    }
     private Vector backPropagationIter(Vector lastLayer, Vector currentLayer,
                             Vector nextError, Matrix[] subMatrices, int currentIndex, boolean correct) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
@@ -248,36 +293,23 @@ public class Network implements Serializable, Cloneable {
         int right = 0, wrong = 0;
 
         List<SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
-        Collections.shuffle(dataList);
-
-//        List<AbstractMap.SimpleEntry<Vector, Vector>> bad = new ArrayList<>(dataList.size() / 10);
 
         for (SimpleEntry<Vector, Vector> entry : dataList) {
             Vector resultVector = process(entry.getKey());
 
             int ind1 = getMaxIndex(entry.getValue()), ind2 = getMaxIndex(resultVector);
-            thr(ind1 < 0 || ind1 > 9 || ind2 < 0 || ind2 > 9);
-
-            float mse = VectorMath.MSE(resultVector, entry.getValue());
-
             if(ind1 == ind2)
                 right++;
             else
                 wrong++;
 
-//            if(ind1 != ind2 || mse > 0.7f)
-//                bad.add(entry);
-
+            float mse = VectorMath.MSE(resultVector, entry.getValue());
             min = Float.min(mse, min);
             max = Float.max(mse, max);
-
             resultError += mse;
         }
 
-        MomentumStat momentumStat = new MomentumStat(right, wrong, min, max, resultError);
-//        Collections.shuffle(bad);
-//        momentumStat.bad = bad;
-        return momentumStat;
+        return new MomentumStat(right, wrong, min, max, resultError);
     }
 
     public void learnIteration(Dataset dataset) {
