@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream;
 import static java.util.AbstractMap.SimpleEntry;
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class IDXReader {
+public class IDXReader extends DataReader {
     private String imagesFilePath;
     private String labelsFilePath;
     private boolean gzippedImages;
@@ -41,7 +41,7 @@ public class IDXReader {
 
     private byte[] buf = null;
     // Сразу переводит в негатив, где 255 - белый
-    private Vector readImageInVector(InputStream inImage, int length) throws IOException {
+    protected Vector readImageInVector(InputStream inImage, int length) throws IOException {
         if(buf == null || buf.length == length) {
             buf = new byte[length];
             int read = inImage.readNBytes(buf, 0, length);

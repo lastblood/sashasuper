@@ -6,13 +6,10 @@ import ru.sashasuper.logic.Vector;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 
-// Допытливый зритель, конечно, спросит: "Ну и нафига он нужен абстрактным"?
-// Отвечаю: для возможной ленивой инициализации
 public abstract class Dataset {
     public abstract List<SimpleEntry<Vector, Vector>> getAll();
 
-    // Возвращает count подсписков. Точный результат зависит от реализации,
-    // единственный контракт, что при любом count < getAll.size, они должны быть не пустыми
+    // Возвращает count подсписков. При любом count < getAll.size, не должно быть пустых
     public List<Dataset> getBatches(int count) {
         List<SimpleEntry<Vector, Vector>> all = new ArrayList<>(getAll());
         Collections.shuffle(all);

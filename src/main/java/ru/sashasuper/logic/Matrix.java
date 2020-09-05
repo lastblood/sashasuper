@@ -41,14 +41,10 @@ public class Matrix implements Serializable, Cloneable {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-//        return new Matrix(getValues().clone());
         float[][] array = new float[getRows()][getColumns()];
 
-        for(int i = 0; i < getRows(); i++) {
-            for(int j = 0; j < getColumns(); j++) {
-                array[i][j] = values[i][j];
-            }
-        }
+        for(int i = 0; i < getRows(); i++)
+            System.arraycopy(values[i], 0, array[i], 0, getColumns());
 
         return new Matrix(array);
     }

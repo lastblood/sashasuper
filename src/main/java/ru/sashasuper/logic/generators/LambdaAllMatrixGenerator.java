@@ -10,18 +10,15 @@ import static ru.sashasuper.utils.Assertions.thr;
 
 public class LambdaAllMatrixGenerator extends AbstractMatrixGenerator {
 
-    private BiFunction<Integer, Integer, Matrix> internalGenerator = null;
+    private BiFunction<Integer, Integer, Matrix> matrixGenerator;
 
-    public LambdaAllMatrixGenerator(BiFunction<Integer, Integer, Matrix> internalGenerator) {
-        this.internalGenerator = internalGenerator;
-    }
-
-    protected LambdaAllMatrixGenerator() {
+    public LambdaAllMatrixGenerator(BiFunction<Integer, Integer, Matrix> matrixGenerator) {
+        this.matrixGenerator = matrixGenerator;
     }
 
     @Override
     public Matrix generateMatrix(int rows, int columns) {
-        return getInternalGenerator().apply(rows, columns);
+        return getMatrixGenerator().apply(rows, columns);
     }
 
     @Override
@@ -32,13 +29,13 @@ public class LambdaAllMatrixGenerator extends AbstractMatrixGenerator {
         thr(sizes.length < 2, "Sizes should contains at least 2 values: input and output vectors size");
         return IntStream.range(0, sizes.length-1)
                 .mapToObj(x -> new AbstractMap.SimpleEntry<>(sizes[x+1], sizes[x] + (biased ? 1 : 0)))
-                .map(y -> getInternalGenerator().apply(y.getKey(), y.getValue()))
+                .map(y -> getMatrixGenerator().apply(y.getKey(), y.getValue()))
                 .toArray(Matrix[]::new);
     }
 
     // Для удобного переопределения поля
-    protected BiFunction<Integer, Integer, Matrix> getInternalGenerator() {
-        thr(internalGenerator == null);
-        return internalGenerator;
+    protected BiFunction<Integer, Integer, Matrix> getMatrixGenerator() {
+        thr(matrixGenerator == null);
+        return matrixGenerator;
     }
 }

@@ -4,6 +4,7 @@ import ru.sashasuper.logic.Vector;
 
 import java.util.Arrays;
 
+@FunctionalInterface
 public interface ElementFunction extends VectorFunction {
     @Override
     default Vector process(Vector operand) {
