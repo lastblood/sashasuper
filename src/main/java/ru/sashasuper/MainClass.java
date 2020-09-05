@@ -3,18 +3,22 @@ package ru.sashasuper;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.io.IDXReader;
-import ru.sashasuper.logic.*;
+import ru.sashasuper.logic.Matrix;
+import ru.sashasuper.logic.MomentumStat;
+import ru.sashasuper.logic.Network;
 import ru.sashasuper.logic.Vector;
-import ru.sashasuper.logic.functions.*;
+import ru.sashasuper.logic.functions.Logistic;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 
 import java.io.*;
-import java.util.*;
-import java.util.AbstractMap.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.zip.GZIPInputStream;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.zip.GZIPOutputStream;
 
 import static ru.sashasuper.utils.Assertions.thr;
@@ -34,64 +38,50 @@ public class MainClass {
                 "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
                 true, true).read();
 
-//        Network nn = new Network(new RandomMatrixGenerator(new Random(15123))
-//                    .generateMatrices(true, -0.1f, 0.1f, 784, 100, 10),
-//                new Logistic(), 1f);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(15123))
+                    .generateMatrices(true, -0.1f, 0.1f, 784, 100, 10),
+                new Logistic(), 1f, true, Network.LOSS_FUNCTION.CROSS_ENTROPY);
 
-        Network nn = null;
-        try {
-            nn = (Network) new ObjectInputStream(new GZIPInputStream(
-                    new FileInputStream("backup100_98.nn"))).readObject();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.exit(-10);
-        }
+//        Network nn = null;
+//        try {
+//            nn = (Network) new ObjectInputStream(new GZIPInputStream(
+//                    new FileInputStream("backup100_98.nn"))).readObject();
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//            System.exit(-10);
+//        }
+
+        nn.setRegularizationRate(0.1f);
 
         System.out.println("Generate");
-        System.out.println(nn.test(test));
+        System.out.println(nn.mtTest(test));
 
 //        ExecutorService service = Executors.newFixedThreadPool(2);
 
-        float learning_rate = 0.5f;
-        float lr_multiplier = 1.05f;
+        float learning_rate = 0.3f;
+        float lr_multiplier = 1.03f;
         float min_learning_rate = 0.003f;
-        float max_learning_rate = 2f;
-        System.out.println("nn.regularizationRate = " + nn.regularizationRate);
-        nn.regularizationRate = 0.1f; //wanna 0.1
-        System.out.println("nn.regularizationRate = " + nn.regularizationRate);
+        float max_learning_rate = 1.0f;
 
         MomentumStat lastStat = null;
 
 //        while(learning_rate > min_learning_rate && (lastStat == null || lastStat.countWrong > 200)) {
-        while(learning_rate < max_learning_rate && (lastStat == null || lastStat.countWrong > 150)) {
+        while(learning_rate < max_learning_rate && (lastStat == null || lastStat.countWrong > 500)) {
             nn.setLearningRate(learning_rate);
 
             long time = System.currentTimeMillis();
 //            nn = trainNetwork(nn, train);
-            train.getBatches(7500).forEach(nn::trainAtBatch);
-
-//            nn = trainNetworkAverage(nn, train, test, 2, service);
+            train.getBatches(3000).forEach(nn::trainAtBatch);
 
 //            MomentumStat statTrain = nn.test(train);
 //            MomentumStat statTest = entry.getKey();
 
             time = System.currentTimeMillis() - time;
-            MomentumStat statTest = nn.test(test);
+            MomentumStat statTest = nn.mtTest(test);
             System.out.printf("%2.2f%% LR: %1.4f %dмс\n", percent.apply(statTest)*100, learning_rate, time);
             System.out.printf("%s\n", statTest);
 
-
-//            if(lastStat != null && learning_rate > 0.005) {
-//                int diff = statTest.countRight - lastStat.countRight;
-//                if(diff < -20)
-//                    learning_rate *= 0.1;
-//                else if(diff < -5)
-//                    learning_rate *= 0.5;
-//                else
-//                    learning_rate *= lr_multiplier;
-//            } else
-                learning_rate *= lr_multiplier;
-
+            learning_rate *= lr_multiplier;
             lastStat = statTest;
         }
 
