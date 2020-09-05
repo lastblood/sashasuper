@@ -283,6 +283,32 @@ public class Network implements Serializable, Cloneable {
         return max;
     }
 
+    private static boolean isRightClassificated(SimpleEntry<Vector, Vector> entry) {
+        return getMaxIndex(entry.getKey()) == getMaxIndex(entry.getValue());
+    }
+
+    // Многопоточная версия тестирования через стандартный пул для parallelStream
+    public MomentumStat mtTest(Dataset dataset) { return mtTest(dataset.getAll()); }
+
+    public MomentumStat mtTest(List<SimpleEntry<Vector, Vector>> entriesList) {
+        List<SimpleEntry<Vector, Vector>> ans =
+                entriesList.parallelStream()
+                        .map(x -> new SimpleEntry<>(x.getValue(), process(x.getKey())))
+                        .collect(Collectors.toList());
+
+        int right = (int) ans.stream().filter(Network::isRightClassificated).count(), wrong = ans.size() - right;
+        float min = Float.MAX_VALUE, max = Float.MIN_VALUE, resultError = 0f;
+
+        for (SimpleEntry<Vector, Vector> entry : ans) {
+            float mse = VectorMath.MSE(entry.getKey(), entry.getValue());
+            min = Float.min(mse, min);
+            max = Float.max(mse, max);
+            resultError += mse;
+        }
+        return new MomentumStat(right, wrong, min, max, resultError);
+    }
+
+
     public MomentumStat test(Dataset dataset) {
         return test(dataset.getAll());
     }
