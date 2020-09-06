@@ -17,7 +17,7 @@ public class RandomMatrixGenerator extends AbstractMatrixGenerator {
         if(rows < 0 || columns < 0)
             throw new IllegalArgumentException("Rows and columns should be > 0");
 
-        float values[][] = new float[rows][columns];
+        float[][] values = new float[rows][columns];
         for(int y = 0; y < rows; y++)
             for(int x = 0; x < columns; x++)
                 values[y][x] = random.nextFloat();

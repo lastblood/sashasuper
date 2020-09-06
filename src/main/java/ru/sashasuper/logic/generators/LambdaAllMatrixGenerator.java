@@ -16,6 +16,8 @@ public class LambdaAllMatrixGenerator extends AbstractMatrixGenerator {
         this.matrixGenerator = matrixGenerator;
     }
 
+    protected LambdaAllMatrixGenerator() { }
+
     @Override
     public Matrix generateMatrix(int rows, int columns) {
         return getMatrixGenerator().apply(rows, columns);
@@ -33,7 +35,6 @@ public class LambdaAllMatrixGenerator extends AbstractMatrixGenerator {
                 .toArray(Matrix[]::new);
     }
 
-    // Для удобного переопределения поля
     protected BiFunction<Integer, Integer, Matrix> getMatrixGenerator() {
         thr(matrixGenerator == null);
         return matrixGenerator;
