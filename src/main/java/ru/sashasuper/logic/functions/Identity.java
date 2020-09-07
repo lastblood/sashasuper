@@ -1,6 +1,6 @@
 package ru.sashasuper.logic.functions;
 
-public class Identity extends ActivateFunction {
+public class Identity implements ElementActivateFunction {
 
     @Override
     public float derivative(float value) {

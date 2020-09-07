@@ -37,8 +37,7 @@ public class BackPropagationTest {
                 .collect(Collectors.toList());
 
         for (int i = 0; i <= epochs; i++) {
-            if(i % 10 == 0)
-                System.out.println("nn = " + Arrays.toString(nn.getWeightMatrices()));
+//            if(i % 10 == 0) System.out.println("nn = " + Arrays.toString(nn.getWeightMatrices()));
             for (SimpleEntry<Vector, Vector> object : entries)
                 nn.backPropagation(object.getKey(), object.getValue());
         }
@@ -87,7 +86,7 @@ public class BackPropagationTest {
     }
 
 
-    void hard(Network nn, int epochs) {
+    void rainTest(Network nn, int epochs) {
         System.out.println(nn.getActivateFunction());
         List<SimpleEntry<Vector, Vector>> vectors = List.of(
                 new SimpleEntry<>(new Vector(0, 0, 0), new Vector(0)),
@@ -105,7 +104,7 @@ public class BackPropagationTest {
             for (SimpleEntry<Vector, Vector> entry : vectors)
                 nn.backPropagation(entry.getKey(), entry.getValue());
 
-            if(i % 10 == 0 && nn.test(vectors).sumMetric < 0.3f && vectors.stream().noneMatch(entry ->
+            if(i % 10 == 0 && nn.test(vectors).sumMetric < 0.1f && vectors.stream().noneMatch(entry ->
                     (nn.process(entry.getKey()).getValues()[0] > 0.5) ^ (entry.getValue().getValues()[0] > 0.5))) {
                 System.out.println(i);
                 return;
@@ -117,33 +116,33 @@ public class BackPropagationTest {
 
     @Test
     void rainTestLogistic() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(0), -0.9f, 0.9f)
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0), -1f, 1f)
                     .generateMatrices(false, 3, 3, 1),
-                new Logistic(), 0.1f, false);
-        hard(nn, 1000);
+                new Logistic(), 1f, false);
+        rainTest(nn, 600);
     }
 
     @Test
     void rainTestReLU() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(2),0.3f, 0.8f)
-                    .generateMatrices(false, 3, 3, 1),
-                new ReLU(), 0.03f, false);
-        hard(nn, 800);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(5), -5f, 1f)
+                .generateMatrices(false,3, 10, 1),
+                new ReLU(), 1f, false);
+        rainTest(nn, 50);
     }
 
     @Test
     void rainTestTanH() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.3f, 0.8f)
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0),-1f, 1f)
                 .generateMatrices(false, 3, 3, 1),
-                new TanH(), 0.03f, false);
-        hard(nn, 1000);
+                new TanH(), 0.2f, false);
+        rainTest(nn, 200);
     }
 
     @Test
     void rainTestSoft() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(0),0.3f, 0.8f)
-                .generateMatrices(false, 3, 2, 1),
-                new SoftPlus(), 0.03f, false);
-        hard(nn, 3000);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(0),-1f, 1f)
+                .generateMatrices(false, 3, 3, 1),
+                new SoftPlus(), 0.4f, false);
+        rainTest(nn, 500);
     }
 }

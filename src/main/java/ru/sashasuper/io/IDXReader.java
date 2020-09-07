@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream;
 import static java.util.AbstractMap.SimpleEntry;
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class IDXReader {
+public class IDXReader extends DataReader {
     private String imagesFilePath;
     private String labelsFilePath;
     private boolean gzippedImages;
@@ -33,7 +33,7 @@ public class IDXReader {
         this.gzippedLabels = gzippedLabels;
     }
 
-    private int readUnsignedInt(InputStream inImage) throws IOException {
+    protected int readUnsignedInt(InputStream inImage) throws IOException {
         long temp = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
         thr(temp < 0, "Wrong value for unsigned integer: " + temp);
         return (int) temp;
@@ -41,7 +41,7 @@ public class IDXReader {
 
     private byte[] buf = null;
     // Сразу переводит в негатив, где 255 - белый
-    private Vector readImageInVector(InputStream inImage, int length) throws IOException {
+    protected Vector readImageInVector(InputStream inImage, int length) throws IOException {
         if(buf == null || buf.length == length) {
             buf = new byte[length];
             int read = inImage.readNBytes(buf, 0, length);
@@ -51,13 +51,12 @@ public class IDXReader {
         float[] array = new float[length];
 
         for (int pixel = 0; pixel < length; pixel++)
-//            array[pixel] = (buf[pixel] / 32) / 8f; // todo: переделать
-             array[pixel] = Byte.toUnsignedInt(buf[pixel]) / 255f;
+             array[pixel] = Byte.toUnsignedInt(buf[pixel]) / 255f * 0.99f;
 
         return new Vector(array);
     }
 
-    private List<SimpleEntry<Vector, Integer>> readIDX
+    protected List<SimpleEntry<Vector, Integer>> readIDX
             (InputStream imageInput, InputStream labelInput, int pixels, int images) throws IOException {
 
         List<SimpleEntry<Vector, Integer>> result = new ArrayList<>(images);

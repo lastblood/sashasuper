@@ -166,7 +166,7 @@ class VectorMathTest {
         Matrix res = multVectors(v1, v2, false);
         assertMatricesEquals(res, new Matrix(result));
     }
-
+/*
     @Test
     void applyToVectorTest() {
         Vector v = new Vector(3.0f, 0, -1.7f, 0.00001f, -0.0f);
@@ -176,7 +176,7 @@ class VectorMathTest {
         assertVectorsEquals(res2, new float[]{1, 0, 0, 1, 0});
         assertVectorsEquals(applyToVector(v, new ReLU(), false), res1);
     }
-
+*/
     @Test
     void multMatrixByTTest() {
         Matrix matrix = new Matrix(new float[][]{{1,2,3}, {3,4,5}});

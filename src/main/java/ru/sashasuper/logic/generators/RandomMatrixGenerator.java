@@ -7,8 +7,9 @@ import java.util.function.BiFunction;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
-public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
-    private Random random = null;
+public class RandomMatrixGenerator extends AbstractMatrixGenerator {
+    private Random random;
+    private LambdaAllMatrixGenerator lambdaGenerator;
 
     private float defaultMin = 0, defaultMax = 1;
 
@@ -16,7 +17,7 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
         if(rows < 0 || columns < 0)
             throw new IllegalArgumentException("Rows and columns should be > 0");
 
-        float values[][] = new float[rows][columns];
+        float[][] values = new float[rows][columns];
         for(int y = 0; y < rows; y++)
             for(int x = 0; x < columns; x++)
                 values[y][x] = random.nextFloat();
@@ -26,22 +27,26 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
 
     public RandomMatrixGenerator() {
         this.random = new Random();
+        lambdaGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
     public RandomMatrixGenerator(Random random) {
         this.random = random;
+        lambdaGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
     public RandomMatrixGenerator(float defaultMin, float defaultMax) {
         this.random = new Random();
         this.defaultMin = defaultMin;
         this.defaultMax = defaultMax;
+        lambdaGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
     public RandomMatrixGenerator(Random random, float defaultMin, float defaultMax) {
         this.random = random;
         this.defaultMin = defaultMin;
         this.defaultMax = defaultMax;
+        lambdaGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
 
@@ -53,17 +58,22 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
     }
 
     public Matrix generateMatrix(int rows, int columns) {
-        Matrix result = super.generateMatrix(rows, columns);
+        Matrix result = lambdaGenerator.generateMatrix(rows, columns);
         return (defaultMin == 0 && defaultMax == 1) ? result : normalizeMatrixTo(result, defaultMin, defaultMax);
     }
 
+    @Override
+    public Matrix[] generateMatrices(boolean biased, int... sizes) {
+        return generateMatrices(biased, defaultMin, defaultMax, sizes);
+    }
 
     // Генерация массива матриц для заданных размеров векторов (значащих полей, без biases)
     public Matrix[] generateMatrices(boolean biased, float min, float max, int ... sizes) {
-        Matrix[] matrices = generateMatrices(biased, sizes);
+        Matrix[] matrices = lambdaGenerator.generateMatrices(biased, sizes);
 
-        for (Matrix matrix : matrices)
-            normalizeMatrixTo(matrix, min, max);
+        if(min != 0 || max != 1)
+            for (Matrix matrix : matrices)
+                normalizeMatrixTo(matrix, min, max);
 
         return matrices;
     }
@@ -80,12 +90,6 @@ public class RandomMatrixGenerator extends LambdaAllMatrixGenerator {
         }
 
         return result;
-    }
-
-
-    @Override
-    protected BiFunction<Integer, Integer, Matrix> getInternalGenerator() {
-        return randomInternalGenerator;
     }
 
     public RandomMatrixGenerator setDefaultMin(float defaultMin) {

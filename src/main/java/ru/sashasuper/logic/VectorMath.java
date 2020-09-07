@@ -2,9 +2,10 @@ package ru.sashasuper.logic;
 
 
 import ru.sashasuper.logic.functions.ActivateFunction;
+import ru.sashasuper.logic.functions.VectorFunction;
 
-import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 import static ru.sashasuper.utils.Assertions.thr;
 
@@ -33,12 +34,6 @@ public class VectorMath {
         int rows = matrix.getRows();
         int columns = matrix.getColumns() - (biased ? 1 : 0);
 
-//        System.out.println("rows = " + rows);
-//        System.out.println("columns = " + columns);
-//
-//        System.out.println("matrix = " + matrix);
-//        System.out.println("vector = " + vector);
-
         thr(vector.getNonBiasedLength() != rows);
 
         float[] result = new float[columns];
@@ -50,8 +45,6 @@ public class VectorMath {
             }
             result[i] = res;
         }
-
-//        System.out.println("result = " + Arrays.toString(result));
         return new Vector(result);
     }
 
@@ -109,35 +102,26 @@ public class VectorMath {
         return new Matrix(result);
     }
 
-    public static Vector applyToVector(Vector vector, ActivateFunction function) {
-        return applyToVector(vector, function, false);
-    }
-
-    //Поэлементное применение функции активации (самой функции или производной)
-    // todo: зачем здесь искусственный immutable? потанцевальная оптимизация
-    public static Vector applyToVector(Vector vector, ActivateFunction function, boolean derivative) {
-        int len = vector.getNonBiasedLength();
-        Vector result = new Vector(new float[len]);
-
-        for (int i = 0; i < len; i++) {
-            float x = vector.getValues()[i];
-            result.getValues()[i] = derivative ? function.derivative(x) : function.process(x);
-        }
-
-        return result;
+    // Поэлементное сложение матриц
+    public static Matrix addMatrices(Matrix firstMatrix, Matrix secondMatrix) {
+        return binaryMatrixOperation(firstMatrix, secondMatrix, (a,b) -> a + b);
     }
 
     // Поэлементное вычитание матриц
     public static Matrix subMatrices(Matrix firstMatrix, Matrix secondMatrix) {
-        int columns = firstMatrix.getColumns(), rows = firstMatrix.getRows();
-        thr(columns != secondMatrix.getColumns() || rows != secondMatrix.getRows());
+        return binaryMatrixOperation(firstMatrix, secondMatrix, (a,b) -> a - b);
+    }
+
+    public static Matrix binaryMatrixOperation(Matrix first, Matrix second, BinaryOperator<Float> op) {
+        int columns = first.getColumns(), rows = first.getRows();
+        thr(columns != second.getColumns() || rows != second.getRows());
 
         float[][] valuesResult = new float[rows][columns];
-        float[][] values1 = firstMatrix.getValues();
-        float[][] values2 = secondMatrix.getValues();
+        float[][] values1 = first.getValues();
+        float[][] values2 = second.getValues();
         for (int y = 0; y < rows; y++)
             for (int x = 0; x < columns; x++)
-                valuesResult[y][x] = values1[y][x] - values2[y][x];
+                valuesResult[y][x] = op.apply(values1[y][x], values2[y][x]);
 
         return new Matrix(valuesResult);
     }

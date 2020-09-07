@@ -1,8 +1,8 @@
 package ru.sashasuper.logic.functions;
 
 
-import java.io.Serializable;
+import ru.sashasuper.logic.Vector;
 
-public abstract class ActivateFunction extends ElementFunction implements Serializable {
-    public abstract float derivative(float value);
+public interface ActivateFunction extends VectorFunction {
+    Vector derivative(Vector operand);
 }

@@ -10,12 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RandomMatrixGeneratorTest {
 
-    @Test
-    void randomMatrixInRangeTest() {
-        //Сгенерированные элементы матрицы лежат в указанном диапазоне
-        RandomMatrixGenerator mg = new RandomMatrixGenerator();
-        float min = 3.47f, max = 8.12f;
-        Matrix matrix = mg.generateMatrix(600,90, min, max);
+    private void assertIn(RandomMatrixGenerator gen, float min, float max) {
+        Matrix matrix = gen.generateMatrix(600,90, min, max);
         float[][] values =  matrix.getValues();
         for (float[] value : values) {
             for (float v : value) {
@@ -23,6 +19,16 @@ class RandomMatrixGeneratorTest {
                 assertTrue(v < max);
             }
         }
+    }
+
+    @Test
+    void randomMatrixInRangeTest() {
+        //Сгенерированные элементы матрицы лежат в указанном диапазоне
+        RandomMatrixGenerator gen = new RandomMatrixGenerator();
+        assertIn(gen, 3.47f, 8.12f);
+        assertIn(gen, -0.1f, 0.1f);
+        assertIn(gen, 0.1f, 0.2f);
+        assertIn(gen, 0.001f, 0.4f);
     }
 
     @Test

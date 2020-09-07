@@ -1,7 +1,6 @@
 package ru.sashasuper.logic;
 
 import java.io.Serializable;
-import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -15,7 +14,7 @@ import static ru.sashasuper.utils.Assertions.thr;
 // он не будет сравниваться при вызове метода equals, не будет учитываться при
 // сравнении, и его разрешается спокойно изменять любой функции извне
 
-public class Vector implements Serializable, Iterable {
+public class Vector implements Serializable, Iterable<Float> {
     // Содержит values.length-1 "значащих" элементов и сдвиг на последнем
     // сдвиг не обязан быть 1, но любая сторонняя функция вправе его изменить
     private float[] values;
@@ -26,9 +25,9 @@ public class Vector implements Serializable, Iterable {
         this.values = makeItBiased(values);
     }
 
-    // isBiased == true -> массив записывается без изменений, biased=true
-    // isBiased == false -> массив изменяется согласно контракту класса, biased=false
-    // Т.о. при true, пользователь API берет на себя ответственность за наличие места под bias
+    // isBiased == true -> массив записывается без изменений
+    // isBiased == false -> массив изменяется согласно контракту класса
+    // Т.о. флажок true значит, что пользователь берет на себя ответственность за наличие bias
     public Vector(boolean isBiased, float ... values) {
         thr(values.length < (isBiased ? 2 : 1), "Недостаточная длина вектора для создания");
         this.values = isBiased ? values : makeItBiased(values);
@@ -42,10 +41,6 @@ public class Vector implements Serializable, Iterable {
     }
 
     private Vector() {
-    }
-
-    public void doBias() {
-        values[values.length - 1] = 1;
     }
 
     // Всегда non-biased вне зависимости от `biased`
@@ -63,20 +58,6 @@ public class Vector implements Serializable, Iterable {
 
     public float[] getValues() {
         return values;
-    }
-
-    // Срезы не завезли, так что создаем копию без Bias и кэшируем мягкой ссылкой
-    // todo: а зочем?
-    private SoftReference<float[]> nonBiasedValues = null;
-    public float[] getNonBiasedValues() {
-        if(nonBiasedValues == null || nonBiasedValues.get() == null) {
-            float[] croppedArray = new float[values.length - 1];
-            System.arraycopy(values, 0, croppedArray, 0, croppedArray.length);
-            nonBiasedValues = new SoftReference<>(croppedArray);
-        }
-
-        thr(nonBiasedValues.get() == null);
-        return nonBiasedValues.get();
     }
 
 
@@ -110,23 +91,23 @@ public class Vector implements Serializable, Iterable {
         return result;
     }
 
+    // Для условно-бесплатного обхода по элементам вектора без байеса
     @Override
-    public Iterator iterator() {
-        return new Iterator() {
-            private int iter = 0;
+    public Iterator<Float> iterator() {
+        return new Iterator<>() {
+            private int iteratorPosition = 0;
 
             @Override
             public boolean hasNext() {
-                return iter < getNonBiasedLength();
+                return iteratorPosition < getNonBiasedLength();
             }
 
             @Override
-            public Object next() {
-                if(!hasNext()) throw new NoSuchElementException();
-                return values[iter++];
+            public Float next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return values[iteratorPosition++];
             }
         };
     }
 }
-
 
