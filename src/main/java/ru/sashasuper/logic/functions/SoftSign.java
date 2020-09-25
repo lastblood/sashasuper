@@ -22,7 +22,7 @@ public class SoftSign implements ElementActivateFunction{
 
     @Override
     public float process(float value) {
-        return (float) (value/(1+abs(value)));
+        return value/(1+abs(value));
     }
 
 }
