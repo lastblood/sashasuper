@@ -37,6 +37,48 @@ class ActivateFunctionTest {
         res = func.derivative(2);
         assertEquals(result, res);
     }
+     @Test
+        void eluTest() {
+        ELU func = new ELU();
+        float result = -0.19003949f;
+        float res = func.process(-3);
+        assertEquals(res, result);
+
+        result = 2f;
+        res = func.process(2);
+        assertEquals(res, result);
+
+        result = 1f;
+        res = func.derivative(2);
+        assertEquals(res, result);
+
+        result = 0.0013482884f;
+        res = func.derivative(-5);
+        assertEquals(res, result);
+     }
+
+    @Test
+    void softSignTest() {
+        SoftSign func = new SoftSign();
+        float result = 0.9285714f;
+        float res = func.process(13);
+        assertEquals(res, result);
+
+        result = -0.85714287f;
+        res = func.process(-6);
+        assertEquals(res, result);
+
+        result = 0.2f;
+        res = func.derivative(2);
+        assertEquals(res, result);
+
+        result = 0.0121951215f;
+        res = func.derivative(-9);
+        assertEquals(res, result);
+
+    }
+
+}
 /*
     @Test
     void reluTest() {
@@ -51,4 +93,4 @@ class ActivateFunctionTest {
 
     }
 */
-}
+
