@@ -123,10 +123,10 @@ public class BackPropagationTest {
 
     @Test
     void rainTestReLU() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(5), -5f, 1f)
-                .generateMatrices(false,3, 10, 1),
-                new ReLU(), 1f, false);
-        rainTest(nn, 50);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(3), -0.5f, 1f)
+                .generateMatrices(false,3, 9, 1),
+                new ReLU(), .3f, false);
+        rainTest(nn, 100);
     }
 
     @Test
@@ -143,5 +143,13 @@ public class BackPropagationTest {
                 .generateMatrices(false, 3, 3, 1),
                 new SoftPlus(), 0.4f, false);
         rainTest(nn, 500);
+    }
+
+    @Test
+    void rainTestSoftSign() {
+        Network nn = new Network(new RandomMatrixGenerator(new Random(1), -0.5f, 0.5f)
+                .generateMatrices(false, 3, 4, 1),
+                new SoftSign(), 0.8f, false);
+        rainTest(nn, 4500);
     }
 }
