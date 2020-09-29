@@ -30,7 +30,7 @@ public class IDXDataset extends Dataset {
 
     // Возвращает вектор с нулями на всех позициях кроме [value+1]
     public static Vector vectorWithOneAtPosition(int value, int length) {
-        thr(value <= length);
+        thr(value >= length);
         float[] vectorValue = new float[length];
         vectorValue[value] = 1.0f;
         return new Vector(vectorValue);
