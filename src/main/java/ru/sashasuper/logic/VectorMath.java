@@ -138,16 +138,30 @@ public class VectorMath {
         return new Matrix(newValue);
     }
 
-    public static float MSE(Vector vector, Vector error) {
-        int length = vector.getNonBiasedLength();
-        thr(length != error.getNonBiasedLength());
+    public static float MSE(Vector ideal, Vector output) {
+        int length = ideal.getNonBiasedLength();
+        thr(length != output.getNonBiasedLength());
 
         double sum = 0;
         for (int i = 0; i < length; i++) {
-            float temp = vector.getValues()[i] - error.getValues()[i];
+            float temp = ideal.getValues()[i] - output.getValues()[i];
             sum += temp * temp;
         }
         return (float) (sum / length);
+    }
+
+    public static float CE(Vector ideal, Vector output) {
+        int length = ideal.getNonBiasedLength();
+        thr(length != output.getNonBiasedLength());
+
+        double sum = 0;
+        for (int i = 0; i < length; i++) {
+            float y = ideal.getValues()[i];
+            float a = output.getValues()[i];
+            double result = y * Math.log(a) + (1 - y) * Math.log(1 - a);
+            sum += Double.isNaN(result) ? 0 : result;
+        }
+        return (float) (sum / -length);
     }
 }
 
