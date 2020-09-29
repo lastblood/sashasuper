@@ -25,6 +25,8 @@ public class Network implements Serializable, Cloneable {
     private ActivateFunction activateFunction;
     private LOSS_FUNCTION lossFunction = LOSS_FUNCTION.MEAN_SQUARED_ERROR;
 
+    public static final long serialVersionUID = 8143914185496047632L;
+
     private float learningRate;
     private float regularizationRate = 0f;
 
