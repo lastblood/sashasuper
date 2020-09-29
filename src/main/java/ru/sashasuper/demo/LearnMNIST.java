@@ -1,6 +1,7 @@
 package ru.sashasuper.demo;
 
 import ru.sashasuper.io.Dataset;
+import ru.sashasuper.io.IDXDataset;
 import ru.sashasuper.io.IDXReader;
 import ru.sashasuper.io.NetworkSerializer;
 import ru.sashasuper.logic.Network;
@@ -8,6 +9,7 @@ import ru.sashasuper.logic.functions.Logistic;
 import ru.sashasuper.logic.generators.XavierGenerator;
 import ru.sashasuper.utils.MomentumStat;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -21,22 +23,21 @@ public class LearnMNIST {
     public static final String trainImages = "train-images-idx3-ubyte.gz";
     public static final String trainLabels = "train-labels-idx1-ubyte.gz";
     public static final String testImages = "t10k-images-idx3-ubyte.gz";
-    public static final String testLabels = "t10k-lables-idx1-ubyte.gz";
+    public static final String testLabels = "t10k-labels-idx1-ubyte.gz";
 
-    public static final int middleCount = 500;
-    public static final int toWrongCount = 300;
+    public static final int middleCount = 150;
+    public static final int toWrongCount = 500;
 
     public void learn(String directory) throws IOException {
-        Dataset train = new IDXReader("C:\\Java\\mnist\\train-images-idx3-ubyte.gz",
-                "C:\\Java\\mnist\\train-labels-idx1-ubyte.gz",
-                true, true).read();
+        if(!directory.endsWith("/") || !directory.endsWith("\\"))
+            directory = directory + File.separator;
 
-        Dataset test = new IDXReader("C:\\Java\\mnist\\t10k-images-idx3-ubyte.gz",
-                "C:\\Java\\mnist\\t10k-labels-idx1-ubyte.gz",
-                true, true).read();
+        Dataset train = new IDXReader(directory + trainImages, directory + trainLabels, true).read();
+        Dataset test = new IDXReader(directory + testImages, directory + testLabels, true).read();
 
         Network nn = Network.builder()
-                .matrices(new XavierGenerator().generateMatrices(true, 784, middleCount, 10))
+                .matrices(new XavierGenerator()
+                        .generateMatrices(true, 784, middleCount, 10))
                 .activation(new Logistic())
                 .learningRate(0.5f)
                 .lossFunction(Network.LOSS_FUNCTION.CROSS_ENTROPY)
@@ -66,11 +67,13 @@ public class LearnMNIST {
             lastStat = statTest;
         }
 
-        NetworkSerializer.serialization(String.format("backup%d_%d.nn", middleCount, toWrongCount), nn);
-//        try(ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(
-//                String.format("backup%d_%d.nn", middleCount, toWrongCount))))) {
-//            oos.writeObject(nn);
-//        }
+        String fileName = String.format("backup%d_%d.nn", middleCount, toWrongCount);
+        NetworkSerializer.serialization(fileName, nn);
         System.out.println("Wrote");
+    }
+
+    public static void main(String[] args) throws IOException {
+        args = new String[]{"C:\\Java\\mnist"};
+        new LearnMNIST().learn(args[0]);
     }
 }
