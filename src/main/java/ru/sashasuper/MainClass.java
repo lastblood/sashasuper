@@ -3,17 +3,12 @@ package ru.sashasuper;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.io.IDXReader;
-import ru.sashasuper.logic.Matrix;
-import ru.sashasuper.logic.MomentumStat;
+import ru.sashasuper.utils.MomentumStat;
 import ru.sashasuper.logic.Network;
-import ru.sashasuper.logic.Vector;
 import ru.sashasuper.logic.functions.Logistic;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 
 import java.io.*;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -38,7 +33,7 @@ public class MainClass {
 
         Network nn = new Network(new RandomMatrixGenerator(new Random(15123))
                     .generateMatrices(true, -0.1f, 0.1f, 784, 100, 10),
-                new Logistic(), 1f, true, Network.LOSS_FUNCTION.CROSS_ENTROPY);
+                new Logistic(), 1f, 0.1f, true, Network.LOSS_FUNCTION.CROSS_ENTROPY, 60000);
 
 //        Network nn = null;
 //        try {
@@ -48,8 +43,6 @@ public class MainClass {
 //            e.printStackTrace();
 //            System.exit(-10);
 //        }
-
-        nn.setRegularizationRate(0.1f);
 
         System.out.println("Generate");
         System.out.println(nn.mtTest(test));

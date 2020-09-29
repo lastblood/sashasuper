@@ -2,9 +2,10 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.logic.functions.ActivateFunction;
+import ru.sashasuper.logic.functions.Logistic;
+import ru.sashasuper.utils.MomentumStat;
 import ru.sashasuper.utils.NanDefender;
 
-import java.awt.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
@@ -20,10 +21,12 @@ public class Network implements Serializable, Cloneable {
     private int outputSize;
     private int layerCount;
 
+    private int epochSize = 60000;
+
     private Matrix[] weightMatrices;
     private boolean withBias;
     private ActivateFunction activateFunction;
-    private LOSS_FUNCTION lossFunction = LOSS_FUNCTION.MEAN_SQUARED_ERROR;
+    private LOSS_FUNCTION lossFunction;
 
     public static final long serialVersionUID = 8143914185496047632L;
 
@@ -34,9 +37,10 @@ public class Network implements Serializable, Cloneable {
         MEAN_SQUARED_ERROR, CROSS_ENTROPY
     }
 
-    public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias, LOSS_FUNCTION lossFunction) {
+    public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate,
+                    float regularizationRate, boolean withBias, LOSS_FUNCTION lossFunction, int epochSize) {
         thr(weightMatrices == null);
-        thr(learningRate <= 0 || learningRate > 1);
+        thr(learningRate <= 0);
 
         this.inputSize = weightMatrices[0].getColumns();
         this.outputSize = weightMatrices[weightMatrices.length - 1].getRows();
@@ -46,12 +50,14 @@ public class Network implements Serializable, Cloneable {
         this.activateFunction = activateFunction;
         this.learningRate = learningRate;
         this.withBias = withBias;
+        this.regularizationRate = regularizationRate;
         this.lossFunction = lossFunction;
+        this.epochSize = epochSize;
     }
 
     public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate, boolean withBias) {
         thr(weightMatrices == null);
-        thr(learningRate <= 0 || learningRate > 1);
+        thr(learningRate <= 0);
 
         this.inputSize = weightMatrices[0].getColumns();
         this.outputSize = weightMatrices[weightMatrices.length - 1].getRows();
@@ -61,21 +67,7 @@ public class Network implements Serializable, Cloneable {
         this.activateFunction = activateFunction;
         this.learningRate = learningRate;
         this.withBias = withBias;
-    }
-
-    public Network(Matrix[] weightMatrices, ActivateFunction activateFunction, float learningRate) {
-        thr(weightMatrices == null);
-        thr(learningRate <= 0 || learningRate > 1);
-
-        this.inputSize = weightMatrices[0].getColumns();
-        this.outputSize = weightMatrices[weightMatrices.length - 1].getRows();
-        this.layerCount = weightMatrices.length - 1;
-
-        this.weightMatrices = weightMatrices;
-        this.activateFunction = activateFunction;
-        this.learningRate = learningRate;
-
-        this.withBias = true;
+        this.lossFunction = LOSS_FUNCTION.MEAN_SQUARED_ERROR;
     }
 
     public int getInputSize() {
@@ -126,6 +118,10 @@ public class Network implements Serializable, Cloneable {
         return withBias;
     }
 
+    public void setEpochSize(int epochSize) {
+        this.epochSize = epochSize;
+    }
+
     // Всегда воспринимает, как non-biased input
     public Vector process(float ... values) {
         return process(new Vector(values));
@@ -169,7 +165,7 @@ public class Network implements Serializable, Cloneable {
 
             for (int y = 0; y < weightMatrix.getRows(); y++) {
                 for (int x = 0; x < weightMatrix.getColumns(); x++) {
-                    matrixValues[y][x] = matrixValues[y][x] * (1 - learningRate*regularizationRate/60000)
+                    matrixValues[y][x] = matrixValues[y][x] * (1 - learningRate*regularizationRate/epochSize)
                             - (learningRate / all.size()) * subMatrixValues[y][x];
                 }
             }
@@ -307,15 +303,14 @@ public class Network implements Serializable, Cloneable {
                         .collect(Collectors.toList());
 
         int right = (int) ans.stream().filter(Network::isRightClassificated).count(), wrong = ans.size() - right;
-        float min = Float.MAX_VALUE, max = Float.MIN_VALUE, resultError = 0f;
+        float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
+        double sumMSE = 0.0, sumCE = 0.0;
 
         for (SimpleEntry<Vector, Vector> entry : ans) {
-            float mse = VectorMath.MSE(entry.getKey(), entry.getValue());
-            min = Float.min(mse, min);
-            max = Float.max(mse, max);
-            resultError += mse;
+            sumMSE += VectorMath.MSE(entry.getKey(), entry.getValue());
+            sumCE += VectorMath.CE(entry.getKey(), entry.getValue());
         }
-        return new MomentumStat(right, wrong, min, max, resultError);
+        return new MomentumStat(right, wrong, sumMSE, sumCE);
     }
 
 
@@ -325,7 +320,7 @@ public class Network implements Serializable, Cloneable {
 
     public MomentumStat test(List<SimpleEntry<Vector, Vector>> entriesList) {
         float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
-        double resultError = 0.0;
+        double sumMSE = 0.0, sumCE = 0.0;
         int right = 0, wrong = 0;
 
         List<SimpleEntry<Vector, Vector>> dataList = new ArrayList<>(entriesList);
@@ -339,15 +334,14 @@ public class Network implements Serializable, Cloneable {
             else
                 wrong++;
 
-            float mse = VectorMath.MSE(resultVector, entry.getValue());
-            min = Float.min(mse, min);
-            max = Float.max(mse, max);
-            resultError += mse;
+            sumMSE += VectorMath.MSE(entry.getValue(), resultVector);
+            sumCE += VectorMath.CE(entry.getValue(), resultVector);
         }
 
-        return new MomentumStat(right, wrong, min, max, resultError);
+        return new MomentumStat(right, wrong, sumMSE, sumCE);
     }
 
+    // Одна эпоха стохастического градиентного спуска
     public void learnIteration(Dataset dataset) {
         for (SimpleEntry<Vector, Vector> entry : dataset.getAll()) {
             backPropagation(entry.getKey(), entry.getValue());
@@ -365,5 +359,59 @@ public class Network implements Serializable, Cloneable {
         c.weightMatrices = matrices;
 
         return c;
+    }
+
+    private static class NetworkBuilder {
+        private ActivateFunction activation = new Logistic();
+        private float learningRate = 0.1f;
+        private float regularizationRate = 0.0f;
+        private boolean biased = true;
+        private LOSS_FUNCTION lossFunction = LOSS_FUNCTION.MEAN_SQUARED_ERROR;
+        private int epochSize = 60000;
+        private Matrix[] matrices = null;
+
+        public NetworkBuilder activation(ActivateFunction activation) {
+            this.activation = activation;
+            return this;
+        }
+
+        public NetworkBuilder learningRate(float learningRate) {
+            this.learningRate = learningRate;
+            return this;
+        }
+
+        public NetworkBuilder regularizationRate(float regularizationRate) {
+            this.regularizationRate = regularizationRate;
+            return this;
+        }
+
+        public NetworkBuilder biased(boolean biased) {
+            this.biased = biased;
+            return this;
+        }
+
+        public NetworkBuilder lossFunction(LOSS_FUNCTION lossFunction) {
+            this.lossFunction = lossFunction;
+            return this;
+        }
+
+        public NetworkBuilder matrices(Matrix[] matrices) {
+            this.matrices = matrices;
+            return this;
+        }
+
+        public NetworkBuilder epochSize(int epochSize) {
+            this.epochSize = epochSize;
+            return this;
+        }
+
+        public Network build() {
+            thr(matrices == null, "You should set matrices in builder");
+            return new Network(matrices, activation, learningRate, regularizationRate, biased, lossFunction, epochSize);
+        }
+    }
+
+    public static NetworkBuilder builder() {
+        return new NetworkBuilder();
     }
 }
