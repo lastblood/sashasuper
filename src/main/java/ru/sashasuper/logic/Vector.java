@@ -27,9 +27,9 @@ public class Vector implements Serializable, Iterable<Float> {
 
     // isBiased == true -> массив записывается без изменений
     // isBiased == false -> массив изменяется согласно контракту класса
-    // Т.о. флажок true значит, что пользователь берет на себя ответственность за наличие bias
+    // Т.о. флажок true значит, что пользователь берет на себя ответственность за bias
     public Vector(boolean isBiased, float ... values) {
-        thr(values.length < (isBiased ? 2 : 1), "Недостаточная длина вектора для создания");
+        thr(values.length < (isBiased ? 2 : 1), "Array is too small");
         this.values = isBiased ? values : makeItBiased(values);
     }
 
