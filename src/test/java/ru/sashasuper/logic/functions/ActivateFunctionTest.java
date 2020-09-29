@@ -68,11 +68,11 @@ class ActivateFunctionTest {
         res = func.process(-6);
         assertEquals(res, result);
 
-        result = 0.2f;
+        result = 0.11111111f;
         res = func.derivative(2);
         assertEquals(res, result);
 
-        result = 0.0121951215f;
+        result = 0.01f;
         res = func.derivative(-9);
         assertEquals(res, result);
 
