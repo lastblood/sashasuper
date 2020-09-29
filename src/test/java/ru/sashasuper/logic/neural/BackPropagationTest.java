@@ -6,7 +6,6 @@ import ru.sashasuper.logic.functions.*;
 import ru.sashasuper.logic.generators.RandomMatrixGenerator;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -82,7 +81,7 @@ public class BackPropagationTest {
                 nn.backPropagation(entry.getKey(), entry.getValue());
             }
         }
-        assertTrue(nn.test(vectors).sumMetric < 0.0001);
+        assertTrue(nn.test(vectors).sumMSE < 0.0001);
     }
 
 
@@ -104,14 +103,14 @@ public class BackPropagationTest {
             for (SimpleEntry<Vector, Vector> entry : vectors)
                 nn.backPropagation(entry.getKey(), entry.getValue());
 
-            if(i % 10 == 0 && nn.test(vectors).sumMetric < 0.1f && vectors.stream().noneMatch(entry ->
+            if(i % 10 == 0 && nn.test(vectors).sumMSE < 0.1f && vectors.stream().noneMatch(entry ->
                     (nn.process(entry.getKey()).getValues()[0] > 0.5) ^ (entry.getValue().getValues()[0] > 0.5))) {
                 System.out.println(i);
                 return;
             }
         }
 
-        fail("Too slow learning " + nn.test(vectors).sumMetric);
+        fail("Too slow learning " + nn.test(vectors).sumMSE);
     }
 
     @Test
@@ -124,10 +123,10 @@ public class BackPropagationTest {
 
     @Test
     void rainTestReLU() {
-        Network nn = new Network(new RandomMatrixGenerator(new Random(5), -5f, 1f)
-                .generateMatrices(false,3, 10, 1),
-                new ReLU(), 1f, false);
-        rainTest(nn, 50);
+        Network nn = new Network(new RandomMatrixGenerator(new Random(3), -0.5f, 1f)
+                .generateMatrices(false,3, 9, 1),
+                new ReLU(), .3f, false);
+        rainTest(nn, 100);
     }
 
     @Test
@@ -144,5 +143,13 @@ public class BackPropagationTest {
                 .generateMatrices(false, 3, 3, 1),
                 new SoftPlus(), 0.4f, false);
         rainTest(nn, 500);
+    }
+
+    @Test
+    void rainTestSoftSign() {
+        Network nn = new Network(new RandomMatrixGenerator(new Random(1), -0.5f, 0.5f)
+                .generateMatrices(false, 3, 4, 1),
+                new SoftSign(), 0.8f, false);
+        rainTest(nn, 4500);
     }
 }
