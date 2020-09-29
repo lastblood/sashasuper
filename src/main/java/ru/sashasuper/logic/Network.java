@@ -2,7 +2,6 @@ package ru.sashasuper.logic;
 
 import ru.sashasuper.io.Dataset;
 import ru.sashasuper.logic.functions.ActivateFunction;
-import ru.sashasuper.preprocessing.ElasticDeformation;
 import ru.sashasuper.utils.NanDefender;
 
 import java.awt.*;
@@ -146,17 +145,11 @@ public class Network implements Serializable, Cloneable {
         return currentVector;
     }
 
-    static final Dimension MNIST_DIMENSION = new Dimension(28, 28);
-    transient ElasticDeformation deformator = new ElasticDeformation(4, 0.05f, new Random(123456));
-
     public void trainAtBatch(Dataset data) {
-        if(deformator == null) deformator = new ElasticDeformation(5, 0.03f, new Random(123456));
         List<SimpleEntry<Vector, Vector>> all = data.getAll();
         Matrix[] subMatrices = all.parallelStream()
                 .map(x -> backPropagation(
-//                        deformator.deformate(
                                 x.getKey(),
-//                                MNIST_DIMENSION),
                         x.getValue(), false))
                 .reduce((matrices1, matrices2) -> IntStream.range(0, matrices1.length)
                         .mapToObj(index -> addMatrices(matrices1[index], matrices2[index]))
