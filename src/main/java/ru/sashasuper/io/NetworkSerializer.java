@@ -2,11 +2,13 @@ package ru.sashasuper.io;
 import ru.sashasuper.logic.Network;
 
 import java.io.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class NetworkSerializer {
 
     public static void serialization(String fileName, Network net) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(fileName);
+        OutputStream outputStream = new GZIPOutputStream(new FileOutputStream(fileName));
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 
         objectOutputStream.writeObject(net);
@@ -14,7 +16,7 @@ public class NetworkSerializer {
     }
 
     public static Network deserialization(String fileName) throws IOException, ClassNotFoundException {
-        FileInputStream fileInputStream = new FileInputStream(fileName);
+        InputStream fileInputStream = new GZIPInputStream(new FileInputStream(fileName));
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
         Network network = (Network) objectInputStream.readObject();

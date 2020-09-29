@@ -279,7 +279,7 @@ public class Network implements Serializable, Cloneable {
         return result;
     }
 
-    private static int getMaxIndex(Vector v) {
+    public static int getMaxIndex(Vector v) {
         int max = 0;
         for (int i = 1; i < v.getValues().length - 1; i++) {
             if(v.getValues()[i] > v.getValues()[max]) {
@@ -289,7 +289,7 @@ public class Network implements Serializable, Cloneable {
         return max;
     }
 
-    private static boolean isRightClassificated(SimpleEntry<Vector, Vector> entry) {
+    public static boolean isRightClassificated(SimpleEntry<Vector, Vector> entry) {
         return getMaxIndex(entry.getKey()) == getMaxIndex(entry.getValue());
     }
 
@@ -361,7 +361,7 @@ public class Network implements Serializable, Cloneable {
         return c;
     }
 
-    private static class NetworkBuilder {
+    public static class NetworkBuilder {
         private ActivateFunction activation = new Logistic();
         private float learningRate = 0.1f;
         private float regularizationRate = 0.0f;

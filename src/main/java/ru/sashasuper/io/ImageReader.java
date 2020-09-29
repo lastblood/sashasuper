@@ -6,10 +6,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Function;
 
 import static ru.sashasuper.utils.Assertions.thr;
@@ -24,6 +23,8 @@ public class ImageReader extends DataReader {
 
     private Function<Vector, Vector> keyMapper = null;
     private Function<Vector, Vector> valueMapper = null;
+
+    private Map<String, Vector> fileToVector = null;
 
     public ImageReader(String propertiesFilePath) {
         this.propertiesFilePath = propertiesFilePath;
@@ -97,6 +98,7 @@ public class ImageReader extends DataReader {
         }
 
         List<SimpleEntry<Vector, Vector>> result = new ArrayList<>();
+        fileToVector = new HashMap<>();
 
         String path = propertiesFile.getParent() + File.separator;
         for (String propertyName : properties.stringPropertyNames()) {
@@ -114,6 +116,7 @@ public class ImageReader extends DataReader {
                 if(valueMapper != null) value = valueMapper.apply(value);
 
                 result.add(new SimpleEntry<>(key, value));
+                fileToVector.put(propertyName, key);
             } catch (IOException ioe) {
                 if(ignoreWrongFiles) // Ругается на неправильные файлы или записи, но не вылетает
                     System.out.println(ioe.toString());
@@ -158,5 +161,9 @@ public class ImageReader extends DataReader {
 
     public void setInverse(boolean inverse) {
         this.inverse = inverse;
+    }
+
+    public Map<String, Vector> getFileToVector() {
+        return fileToVector;
     }
 }
