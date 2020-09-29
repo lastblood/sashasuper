@@ -176,6 +176,23 @@ public class Network implements Serializable, Cloneable {
         }
     }
 
+    // Суммирует матрицы одинакового размера в одну
+    private static Matrix sumFrom(Matrix ... matrices) {
+        // Работает только для матриц одинаковых размеров
+        thr(Arrays.stream(matrices).anyMatch(m ->
+                matrices[0].getColumns() != m.getColumns() || matrices[0].getRows() != m.getRows()));
+        int rows = matrices[0].getRows();
+        int columns = matrices[0].getColumns();
+        float[][] result = new float[rows][columns];
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < columns; x++) {
+                for (Matrix matrix : matrices)
+                    result[y][x] += matrix.getValues()[y][x];
+            }
+        }
+        return new Matrix(result);
+    }
+
 
 
     // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
