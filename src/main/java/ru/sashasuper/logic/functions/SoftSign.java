@@ -6,18 +6,10 @@ import static java.lang.Math.pow;
 
 public class SoftSign implements ElementActivateFunction{
 
-    private float negativeMultiplier=-2.2f, positiveMultiplier=5.0f;
-
-    public SoftSign() {}
-    public SoftSign (float negativeMultiplier, float positiveMultiplier) {
-        this.negativeMultiplier = negativeMultiplier;
-        this.positiveMultiplier = positiveMultiplier;
-    }
-
     @Override
     public float derivative(float value) {
 
-        return (float) (1/(1+pow(abs(value), 2)));
+        return (float) (1/pow((1+abs(value)), 2));
     }
 
     @Override
