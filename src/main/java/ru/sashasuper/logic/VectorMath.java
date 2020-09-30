@@ -1,9 +1,5 @@
 package ru.sashasuper.logic;
 
-
-import ru.sashasuper.logic.functions.ActivateFunction;
-import ru.sashasuper.logic.functions.VectorFunction;
-
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 
@@ -48,11 +44,8 @@ public class VectorMath {
         return new Vector(result);
     }
 
-
     //Поэлементное умножение векторов
     public static Vector multElements(Vector firstVector, Vector secondVector, boolean biasedResult) {
-//        System.out.println("firstVector = " + firstVector);
-//        System.out.println("secondVector = " + secondVector);
         return binaryVectorOperation(firstVector, secondVector, (x,y) -> x * y, biasedResult);
     }
 
@@ -62,12 +55,8 @@ public class VectorMath {
     }
 
     // Универсальная поэлементная операция с оптимизированным созданием bias-векторов
-    // todo: есть ли разница между biased и non-biased?
     private static Vector binaryVectorOperation(
                 Vector v1, Vector v2, BiFunction<Float, Float, Float> operation, boolean biased) {
-
-//        int actualLength = v1.getLength(biased);
-//        thr(actualLength != v2.getLength(biased));
 
         int actualLength = v1.getNonBiasedLength();
         thr(actualLength != v2.getNonBiasedLength());
@@ -84,12 +73,6 @@ public class VectorMath {
 
     //Произведение вектора-столбца на вектор-строку
     public static Matrix multVectors(Vector columnVector, Vector rowVector, boolean biased) {
-//        int columns = rowVector.getRealLength();
-//        int rows = columnVector.getRealLength();
-
-//        System.out.println("columnVector = " + columnVector);
-//        System.out.println("rowVector = " + rowVector);
-
         int columns = rowVector.getNonBiasedLength();
         int rows = columnVector.getLength(biased);
 

@@ -65,8 +65,8 @@ public class BackPropagationTest {
         Random rand = new Random(101);
         RandomMatrixGenerator gen = new RandomMatrixGenerator(rand, 0.1f, 0.7f);
 
-        Network nn = new Network(gen.generateMatrices(true, 2, 4, 2),
-                new ReLU(), 0.03f, true);
+        Network nn = new Network(gen.generateMatrices(true, 2, 2, 2),
+                new ReLU(), 0.1f, true);
 
         List<SimpleEntry<Vector, Vector>> vectors = List.of(
                 new SimpleEntry<>(new Vector(0, 0), new Vector(1, 0)),
@@ -75,7 +75,7 @@ public class BackPropagationTest {
                 new SimpleEntry<>(new Vector(1, 1), new Vector(1, 0))
         );
 
-        for (int i = 0; i < 800; i++) {
+        for (int i = 0; i < 200; i++) {
             for (int j = 0; j < 4; j++) {
                 SimpleEntry<Vector, Vector> entry = vectors.get(rand.nextInt(4));
                 nn.backPropagation(entry.getKey(), entry.getValue());
@@ -98,7 +98,6 @@ public class BackPropagationTest {
                 new SimpleEntry<>(new Vector(1, 1, 1), new Vector(1))
         );
 
-        float sum = 0;
         for(int i = 0; i <= epochs; i++) {
             for (SimpleEntry<Vector, Vector> entry : vectors)
                 nn.backPropagation(entry.getKey(), entry.getValue());

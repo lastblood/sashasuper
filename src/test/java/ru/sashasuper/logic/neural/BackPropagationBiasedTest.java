@@ -1,6 +1,5 @@
 package ru.sashasuper.logic.neural;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.sashasuper.logic.Matrix;
 import ru.sashasuper.logic.Network;
@@ -9,7 +8,6 @@ import ru.sashasuper.logic.functions.Identity;
 import ru.sashasuper.logic.functions.ReLU;
 
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -30,11 +28,8 @@ public class BackPropagationBiasedTest {
             }
         }
 
-        System.out.println(Arrays.toString(nn.getWeightMatrices()));
-
         for(float i = 0; i <= 1.001; i += 0.05) {
             float j = i / 2;
-//            System.out.println(i + " " + nn.process(i).getValues()[0]);
             assertTrue(Math.abs(nn.process(i).getValues()[0] - j) < 0.0001);
         }
     }

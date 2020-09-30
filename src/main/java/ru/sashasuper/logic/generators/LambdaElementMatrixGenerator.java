@@ -9,7 +9,7 @@ public class LambdaElementMatrixGenerator extends LambdaAllMatrixGenerator {
     private BiFunction<Integer, Integer, Matrix> internalMatrixGenerator;
 
     @Override
-    protected BiFunction<Integer, Integer, Matrix> getMatrixGenerator() {
+    protected BiFunction<Integer, Integer, Matrix> getInternalMatrixGenerator() {
         return internalMatrixGenerator;
     }
 
