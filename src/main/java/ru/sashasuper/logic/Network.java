@@ -82,7 +82,7 @@ public class Network implements Serializable, Cloneable {
         return layerCount;
     }
 
-    public Matrix[] getWeightMatrices() {
+    private Matrix[] getWeightMatrices() {
         return weightMatrices;
     }
 
@@ -95,7 +95,7 @@ public class Network implements Serializable, Cloneable {
     }
 
     public void setLearningRate(float learningRate) {
-        this.learningRate = learningRate;
+        if(learningRate > 0) this.learningRate = learningRate;
     }
 
     public float getRegularizationRate() {
@@ -191,30 +191,21 @@ public class Network implements Serializable, Cloneable {
 
 
 
-    // Перемножение вектора-строки и вектора-столбца, транспонирование матрицы, умножение матрицы на число,
-    //  поэлементное вычитание матриц, применение матрицы к вектору с другой стороны (ВСЕ ЭТО ТОЛЬКО ЗДЕСЬ)
-    // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
-    // currentIndex указывает на индекс текущей меняемой матрицы
-
     public Matrix[] backPropagation(Vector input, Vector expectedOutput) {
         return backPropagation(input, expectedOutput, true);
     }
 
-    // Используется только вычитание двух векторов (И ТОЛЬКО ЗДЕСЬ)
     public Matrix[] backPropagation(Vector input, Vector expectedOutput, boolean correct) {
         thr(getWeightMatrices()[0].getColumns() != input.getLength(withBias));
 
         Vector[] activations = new Vector[getHiddenLayerCount() + 2];
         activations[0] = input;
-
         Vector[] z_vectors = new Vector[getHiddenLayerCount() + 1];
 
         for (int i = 0; i < getWeightMatrices().length; i++) {
             z_vectors[i] = multMatrixVector(getWeightMatrices()[i], activations[i], withBias);
             activations[i + 1] = getActivateFunction().process(z_vectors[i]);
         }
-
-//        activations[activations.length - 1] = soft.process(activations[activations.length - 1]);
 
         // Найти ошибку для выходного вектора
         Vector costLayer = subElements(activations[getHiddenLayerCount() + 1], expectedOutput, withBias);
@@ -233,7 +224,7 @@ public class Network implements Serializable, Cloneable {
 
         Matrix[] subMatrices = new Matrix[getWeightMatrices().length];
 
-            // Прогнать через backPropagation все слои
+        // Прогнать через backPropagation все слои
         for (int index = getWeightMatrices().length - 1; index >= 0; index--) {
             thr(!Arrays.stream(activations).allMatch(x -> x.getValues()[x.getValues().length - 1] == 1));
             errorLayer = backPropagationIter(activations[index], z_vectors[index],
@@ -245,6 +236,8 @@ public class Network implements Serializable, Cloneable {
     }
 
 
+    // ATTENTION!!! НЕ ПОТОКО-БЕЗОПАСНОЕ, МЕНЯЕТ МАТРИЦЫ ВНУТРИ network
+    // currentIndex указывает на индекс текущей меняемой матрицы
     private Vector backPropagationIter(Vector lastLayer, Vector currentLayer,
                             Vector nextError, Matrix[] subMatrices, int currentIndex, boolean correct) {
         thr(currentIndex < 0 || currentIndex >= weightMatrices.length);
@@ -270,7 +263,7 @@ public class Network implements Serializable, Cloneable {
         if(correct) { // Корректируем текущую матрицу весов
             for (int y = 0; y < current.getRows(); y++)
                 for (int x = 0; x < current.getColumns() - 1; x++)
-                    current.getValues()[y][x] *= 1 - learningRate*regularizationRate/60000;
+                    current.getValues()[y][x] *= 1 - learningRate*regularizationRate/epochSize;
 
             getWeightMatrices()[currentIndex] = subMatrices(current, subMatrices[currentIndex]);
         }
@@ -303,7 +296,6 @@ public class Network implements Serializable, Cloneable {
                         .collect(Collectors.toList());
 
         int right = (int) ans.stream().filter(Network::isRightClassificated).count(), wrong = ans.size() - right;
-        float min = Float.MAX_VALUE, max = Float.MIN_VALUE;
         double sumMSE = 0.0, sumCE = 0.0;
 
         for (SimpleEntry<Vector, Vector> entry : ans) {
@@ -407,7 +399,8 @@ public class Network implements Serializable, Cloneable {
 
         public Network build() {
             thr(matrices == null, "You should set matrices in builder");
-            return new Network(matrices, activation, learningRate, regularizationRate, biased, lossFunction, epochSize);
+            return new Network(matrices, activation, learningRate,
+                    regularizationRate, biased, lossFunction, epochSize);
         }
     }
 

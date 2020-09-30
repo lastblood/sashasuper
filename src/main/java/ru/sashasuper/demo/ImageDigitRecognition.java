@@ -1,13 +1,14 @@
 package ru.sashasuper.demo;
 
 import ru.sashasuper.io.*;
-import ru.sashasuper.logic.Network;
-import ru.sashasuper.logic.Vector;
-import ru.sashasuper.logic.VectorMath;
+import ru.sashasuper.logic.*;
+import ru.sashasuper.logic.functions.ElementFunction;
 
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
+
+import static ru.sashasuper.utils.Assertions.thr;
 
 public class ImageDigitRecognition {
     public void recognize(String propertiesPath, String neuralNetworkPath) throws IOException {
@@ -21,8 +22,9 @@ public class ImageDigitRecognition {
 
         ImageReader imageReader = new ImageReader(propertiesPath, true);
         imageReader.setScale(28, 28);
-        imageReader.setValueMapper(v -> IDXDataset.vectorWithOneAtPosition(Math.round(v.getValues()[0]), 10));
-        imageReader.setInverse(true);
+        imageReader.setKeyMapper(((ElementFunction) x -> x / 256)::process);
+        imageReader.setValueMapper(v -> v.getNonBiasedLength() == 1 ?
+                IDXDataset.vectorWithOneAtPosition(Math.round(v.getValues()[0]), 10) : v);
 
         Dataset data = imageReader.read();
         Map<String, Vector> map = imageReader.getFileToVector();
@@ -53,8 +55,9 @@ public class ImageDigitRecognition {
     }
 
     public static void main(String[] args) throws IOException {
-//        args = new String[]{"C:\\Java\\sashasuper\\imageTest\\images.properties", "C:\\Java\\sashasuper\\backup500_98.nn"};
-        ImageDigitRecognition r = new ImageDigitRecognition();
-        r.recognize(args[0], args[1]);
+        thr(args.length < 2,
+            "Args[0] should contains path to properties file, " +
+                    "Args[1] should contains path to serialized neural network");
+        new ImageDigitRecognition().recognize(args[0], args[1]);
     }
 }

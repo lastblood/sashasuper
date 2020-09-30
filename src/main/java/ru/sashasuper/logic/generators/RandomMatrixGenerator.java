@@ -49,9 +49,7 @@ public class RandomMatrixGenerator extends AbstractMatrixGenerator {
         lambdaGenerator = new LambdaAllMatrixGenerator(randomInternalGenerator);
     }
 
-
     // min included, max excluded
-    // todo: После генерации производит "нормализацию" в границы нужного диапазона
     public Matrix generateMatrix(int rows, int columns, float min, float max) {
         Matrix result = generateMatrix(rows, columns);
         return (min == 0 && max == 1) ? result : normalizeMatrixTo(result, min, max);

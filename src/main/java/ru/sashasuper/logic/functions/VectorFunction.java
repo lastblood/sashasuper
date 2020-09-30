@@ -1,6 +1,5 @@
 package ru.sashasuper.logic.functions;
 
-
 import ru.sashasuper.logic.Vector;
 
 import java.io.Serializable;

@@ -1,14 +1,12 @@
 package ru.sashasuper.logic;
 
 import org.junit.jupiter.api.Test;
-import ru.sashasuper.logic.functions.ReLU;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.sashasuper.logic.TestUtils.*;
 import static ru.sashasuper.logic.VectorMath.*;
 
 
-// todo: написать версию для тестов с bias'ами
 class VectorMathTest {
 
     @Test
@@ -166,17 +164,7 @@ class VectorMathTest {
         Matrix res = multVectors(v1, v2, false);
         assertMatricesEquals(res, new Matrix(result));
     }
-/*
-    @Test
-    void applyToVectorTest() {
-        Vector v = new Vector(3.0f, 0, -1.7f, 0.00001f, -0.0f);
-        Vector res1 = applyToVector(v, new ReLU());
-        assertVectorsEquals(res1, new Vector(new float[]{3.0f, 0,0, 0.00001f, 0}));
-        Vector res2 = applyToVector(v, new ReLU(), true);
-        assertVectorsEquals(res2, new float[]{1, 0, 0, 1, 0});
-        assertVectorsEquals(applyToVector(v, new ReLU(), false), res1);
-    }
-*/
+
     @Test
     void multMatrixByTTest() {
         Matrix matrix = new Matrix(new float[][]{{1,2,3}, {3,4,5}});

@@ -1,7 +1,6 @@
 package ru.sashasuper.utils;
 
 import ru.sashasuper.logic.Matrix;
-import ru.sashasuper.logic.Network;
 import ru.sashasuper.logic.Vector;
 
 import java.util.Arrays;
@@ -20,9 +19,5 @@ public class NanDefender {
                 if(v != v) return true;
             return false;
         });
-    }
-
-    public static boolean inNetwork(Network n) {
-        return Arrays.stream(n.getWeightMatrices()).anyMatch(NanDefender::inMatrix);
     }
 }
