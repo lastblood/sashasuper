@@ -32,18 +32,17 @@ public class LearnMNIST {
             directory = directory + File.separator;
 
         Dataset train = new IDXReader(directory + trainImages,
-                directory + trainLabels,
-                true).read();
+                directory + trainLabels, true).read();
+
         Dataset test = new IDXReader(directory + testImages,
-                directory + testLabels,
-                true).read();
+                directory + testLabels, true).read();
 
         Network nn = Network.builder()
                 .matrices(new XavierGenerator().generateMatrices(true, neuronCounts))
                 .activation(new Logistic())
                 .learningRate(1.0f)
                 .lossFunction(Network.LOSS_FUNCTION.CROSS_ENTROPY)
-                .regularizationRate(0.3f)
+                .regularizationRate(0.2f)
                 .build();
 
         System.out.println("Generate");
@@ -75,11 +74,8 @@ public class LearnMNIST {
     }
 
     public static void main(String[] args) throws IOException {
-        thr(args.length < 1,
-                "Args[0] should contains dir path with four MNIST database files");
+        thr(args.length < 1, "Args[0] should contains dir path with four MNIST database files");
         thr(!new File(args[0]).isDirectory(), "Wrong dir path " + args[0]);
-
         new LearnMNIST().learn(args[0]);
-        new Scanner(System.in).nextLine();
     }
 }
